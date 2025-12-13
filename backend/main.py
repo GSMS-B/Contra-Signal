@@ -227,7 +227,10 @@ async def ask_question(job_id: str, request: QuestionRequest):
         resp = model.generate_content(prompt)
         return QuestionResponse(answer=resp.text)
     except Exception as e:
-        return QuestionResponse(answer="I'm sorry, I couldn't generate an answer at the moment.")
+        import traceback
+        traceback.print_exc()
+        print(f"!!! [Q&A] ERROR: {e}")
+        return QuestionResponse(answer=f"I'm sorry, I encountered an error: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

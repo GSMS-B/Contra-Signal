@@ -41,6 +41,10 @@ class FinancialRAG:
             n_results=n_results,
             where={"company": company_name}
         )
+        n_found = len(results['documents'][0])
+        print(f"[RAG] Query: '{question}' for '{company_name}' -> Found {n_found} docs.")
+        if n_found == 0:
+            return ""
         
         docs = results['documents'][0]
         return "\n\n---\n\n".join(docs)
