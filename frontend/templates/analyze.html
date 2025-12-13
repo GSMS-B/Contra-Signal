@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Analysis | ContraSignal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <span>🎯</span> ContraSignal
+            </div>
+            <a href="/" class="btn btn-sm btn-secondary">← Back to Home</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="form-section">
+            <h2 style="text-align: center; margin-bottom: 2rem;">New Analysis</h2>
+
+            <form id="analysisForm">
+                <!-- Step 1 -->
+                <div class="form-group">
+                    <label>Step 1: Target Company</label>
+                    <input type="text" id="companyName" name="company_name" placeholder="e.g., Adani Enterprises, TCS"
+                        required>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="form-group">
+                    <label>Step 2: Financial Report</label>
+                    <div style="margin-bottom: 1rem;" class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="report_type" value="annual" checked> Annual Report
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="report_type" value="quarterly"> Quarterly Report
+                        </label>
+                    </div>
+
+                    <div class="upload-zone" id="mainDropZone">
+                        <div class="upload-icon">📄</div>
+                        <p><strong>Click to upload</strong> or drag and drop PDF</p>
+                        <p style="font-size: 0.875rem; color: #6B7280;">Max size 10MB</p>
+                        <input type="file" id="mainReport" name="main_report" accept=".pdf" style="display: none;">
+                    </div>
+                    <div id="mainFileInfo" class="file-info" style="display: none;"></div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="form-group">
+                    <label>Step 3: Peer Comparison (Optional)</label>
+                    <div id="peersList"></div>
+                    <button type="button" id="addPeerBtn" class="btn btn-sm btn-secondary"
+                        style="width: 100%; border-style: dashed;">
+                        + Add Peer Company
+                    </button>
+                    <p style="font-size: 0.875rem; color: #6B7280; margin-top: 0.5rem;">Add up to 3 competitors for
+                        benchmarking</p>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <a href="/" class="btn btn-secondary" style="flex: 1; text-align: center;">Cancel</a>
+                    <button type="submit" id="submitBtn" class="btn btn-primary" style="flex: 2;" disabled>Analyze
+                        Opportunity →</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="/static/js/analyze.js"></script>
+</body>
+
+</html>

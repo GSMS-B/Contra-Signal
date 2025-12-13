@@ -6,7 +6,7 @@
 
 ### The Market Inefficiency Crisis
 
-In today's hyper-connected financial markets, negative news spreads instantly, triggering widespread panic selling among retail investors. When adverse headlines break—regulatory challenges, temporary operational setbacks, or controversial announcements—stock prices often plummet indiscriminately, regardless of underlying business fundamentals. This creates a critical disconnect: **fundamentally strong companies with robust financials experience severe price drops driven by short-term sentiment rather than actual deterioration in business quality.**
+In  today's hyper-connected financial markets, negative news spreads instantly, triggering widespread panic selling among retail investors. When adverse headlines break—regulatory challenges, temporary operational setbacks, or controversial announcements—stock prices often plummet indiscriminately, regardless of underlying business fundamentals. This creates a critical disconnect: **fundamentally strong companies with robust financials experience severe price drops driven by short-term sentiment rather than actual deterioration in business quality.**
 
 ### The Core Challenges
 

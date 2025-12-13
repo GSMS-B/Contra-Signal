@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyzing... | ContraSignal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <span>🎯</span> ContraSignal
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="progress-container">
+            <h2 id="pageTitle" style="text-align: center; margin-bottom: 2rem;">Analyzing Company...</h2>
+
+            <div class="progress-bar-bg">
+                <div id="progressBar" class="progress-bar-fill"></div>
+            </div>
+
+            <ul class="step-list" id="stepList">
+                <li class="step-item pending" id="step_news">
+                    <span class="step-icon">○</span> Analyzing News Sentiment
+                </li>
+                <li class="step-item pending" id="step_fundamentals">
+                    <span class="step-icon">○</span> Analyzing Fundamentals (RAG)
+                </li>
+                <li class="step-item pending" id="step_peers">
+                    <span class="step-icon">○</span> Comparing Peers
+                </li>
+                <li class="step-item pending" id="step_signal">
+                    <span class="step-icon">○</span> Generating Contrarian Signal
+                </li>
+            </ul>
+
+            <p style="text-align: center; margin-top: 2rem; color: #6B7280;">Estimated time remaining: <span
+                    id="timeRemaining">60</span> seconds</p>
+
+            <div class="card" style="margin-top: 3rem; background: #F3F4F6; border: none;">
+                <h4 style="color: #3B82F6; margin-bottom: 0.5rem;">💡 Did you know?</h4>
+                <p id="didYouKnow" style="margin: 0; font-size: 0.95rem;">Warren Buffett loves to buy quality companies
+                    when they are on the operating table.</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/js/progress.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results | ContraSignal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <span>🎯</span> ContraSignal
+            </div>
+            <a href="/analyze" class="btn btn-sm btn-secondary">Analyze Another</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Header -->
+        <div class="results-header">
+            <div>
+                <h1 id="companyNameDisplay">Company Analysis</h1>
+                <p id="analysisDate">Date: Jan 1, 2024</p>
+            </div>
+            <button class="btn btn-secondary" onclick="window.print()">Download Report</button>
+        </div>
+
+        <!-- Signal Card -->
+        <div id="signalCard" class="signal-card">
+            <div class="signal-main">
+                <span class="hero-tagline" style="color: rgba(255,255,255,0.9);">RECOMMENDATION</span>
+                <h2 id="signalType">LOADING...</h2>
+                <p id="signalSummary"
+                    style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1.1rem; max-width: 600px;">
+                    Analyzing data...
+                </p>
+            </div>
+            <div class="signal-score">
+                <div class="hero-tagline" style="color: rgba(255,255,255,0.9); text-align: right;">SIGNAL STRENGTH</div>
+                <div class="score-val" id="signalStrength">--/10</div>
+                <div style="font-size: 0.875rem; opacity: 0.9;">Confidence: <span id="confidenceLevel">--</span></div>
+            </div>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="dashboard-grid">
+            <!-- News Sentiment -->
+            <div class="card">
+                <h3>📰 News Sentiment</h3>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700;" id="newsScore">--</div>
+                    <div style="color: var(--neutral-500);">Range: -10 to +10</div>
+                </div>
+                <!-- Visual Bar Helper -->
+                <div class="metric-bar">
+                    <div id="newsBar" class="metric-fill"></div>
+                </div>
+
+                <div
+                    style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; text-align: center;">
+                    <div
+                        style="background: #FEF2F2; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #FECACA;">
+                        <div style="color: #EF4444; font-weight: 700;" id="negCount">--</div>
+                        <div style="font-size: 0.75rem;">Negative</div>
+                    </div>
+                    <div
+                        style="background: #ECFDF5; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #A7F3D0;">
+                        <div style="color: #10B981; font-weight: 700;" id="posCount">--</div>
+                        <div style="font-size: 0.75rem;">Positive</div>
+                    </div>
+                    <div
+                        style="background: #F3F4F6; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #E5E7EB;">
+                        <div style="color: #6B7280; font-weight: 700;" id="neuCount">--</div>
+                        <div style="font-size: 0.75rem;">Neutral</div>
+                    </div>
+                </div>
+
+                <!-- Headlines Section -->
+                <div class="mt-4" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f3f4f6;">
+                    <h4 style="font-size: 0.875rem; font-weight: 600; color: #9ca3af; margin-bottom: 0.5rem;">Top
+                        Headlines Used</h4>
+                    <ul id="news-headlines"
+                        style="font-size: 0.75rem; color: #d1d5db; list-style-type: disc; padding-left: 1rem; line-height: 1.4;">
+                        <!-- Dynamic headlines -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Fundamentals -->
+            <div class="card">
+                <h3>💪 Fundamental Strength</h3>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700;" id="fundScore">--/10</div>
+                    <div style="color: var(--neutral-500);">Health Score</div>
+                </div>
+                <div class="metric-bar">
+                    <div id="fundBar" class="metric-fill high"></div>
+                </div>
+
+                <div style="margin-top: 1.5rem;" id="fundMetrics">
+                    <!-- Dynamic Metrics -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Peer Comparison -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3>📊 Peer Comparison</h3>
+            <p>Competitive Position: <strong id="compPosition">--</strong></p>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #E5E7EB; text-align: left;">
+                            <th style="padding: 0.75rem;">Company</th>
+                            <th style="padding: 0.75rem;">Revenue Growth</th>
+                            <th style="padding: 0.75rem;">Profit Margin</th>
+                            <th style="padding: 0.75rem;">ROE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="peerTableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Thesis -->
+        <div class="investment-thesis">
+            <h3>🎯 Investment Thesis</h3>
+            <div class="dashboard-grid" style="margin-bottom: 0;">
+                <div>
+                    <h4>Why This Is An Opportunity</h4>
+                    <ul id="oppReasons" style="padding-left: 1.25rem; margin-bottom: 2rem;"></ul>
+
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-500 mb-2">Management Outlook</h4>
+                        <p id="mgmtOutlook" class="text-sm text-gray-700 bg-gray-50 p-3 rounded border border-gray-100">
+                            Loading...</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h4 class="text-sm font-semibold text-gray-500 mb-2">Future Development Plans</h4>
+                        <p id="futureDev" class="text-sm text-gray-700 bg-gray-50 p-3 rounded border border-gray-100">
+                            Loading...</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-6">
+                        <div>
+                            <h4 class="text-xs font-semibold text-gray-400 uppercase">Timeframe</h4>
+                            <p id="timeframe" class="text-lg font-bold text-gray-800">--</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-semibold text-gray-400 uppercase">Entry</h4>
+                            <p id="entryStrategy" class="text-lg font-bold text-gray-800">--</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4>⚠️ Key Risks To Watch</h4>
+                    <ul id="riskFactors" class="risk-factors" style="padding-left: 1.25rem;"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q&A -->
+        <div class="chat-section">
+            <h3>💬 Ask Follow-Up Questions</h3>
+            <div class="chat-history" id="chatHistory">
+                <div class="chat-bubble bot">
+                    I've analyzed the reports and news. Ask me anything about the specific risks or financial details!
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <input type="text" id="questionInput" placeholder="Ask about debt, cash flow, or specific news..."
+                    style="flex: 1;">
+                <button class="btn btn-primary" id="askBtn">Ask</button>
+            </div>
+
+            <div class="suggested-questions" id="suggestedQuestions">
+                <div class="pill">Explain the regulatory risk</div>
+                <div class="pill">How does debt compare to peers?</div>
+                <div class="pill">What is the worst case scenario?</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 4rem;">&nbsp;</div>
+    </main>
+
+    <script src="/static/js/results.js"></script>
+</body>
+
+</html>
