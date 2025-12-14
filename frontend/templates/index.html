@@ -1,64 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ContraSignal | Intelligent Contrarian Investing</title>
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Isolated Landing Styles -->
+    <link rel="stylesheet" href="/static/css/landing.css">
+
+    <!-- Dependencies (Three.js & GSAP) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
+
 <body>
-    <header>
-        <div class="container header-content">
-            <div class="logo">
-                <span>🎯</span> ContraSignal
-            </div>
-            <nav>
-                <a href="#">About</a>
-                <a href="#">How It Works</a>
-            </nav>
+
+    <!-- Header Overlay -->
+    <header class="absolute-header">
+        <div class="logo">
+            <span>🎯</span> ContraSignal
         </div>
+        <nav>
+            <!-- Simple nav placeholders if needed -->
+        </nav>
     </header>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <span class="hero-tagline">AI-Powered Investment Intelligence</span>
-                <h1>Find Buying Opportunities<br>When Markets Panic</h1>
-                <p>When bad news meets strong fundamentals, smart money buys. Detect the signal in the noise.</p>
-                <a href="/analyze" class="btn btn-primary">Start Analysis →</a>
-            </div>
-        </section>
+    <!-- 3D Background (Fixed) -->
+    <div id="canvas-container"></div>
 
-        <section class="features">
-            <div class="container">
+    <!-- Vignette Overlay (Fixed) -->
+    <div class="overlay-gradient"></div>
+
+    <!-- Scrollable Content -->
+    <div class="scroll-wrapper">
+
+        <!-- HERO SECTION -->
+        <main class="content-wrapper">
+            <div class="text-center">
+                <span class="hero-tagline">AI-Powered Investment Intelligence</span>
+                <h1 id="hero-title">
+                    Find Buying Opportunities <br> When Markets Panic
+                </h1>
+                <p id="hero-desc">
+                    When bad news meets strong fundamentals, smart money buys. <br>
+                    Detect the signal in the noise with AI-driven contrarian analysis.
+                </p>
+
+                <div id="hero-ctas" class="cta-group">
+                    <a href="/analyze" class="btn-primary">
+                        Start Analysis →
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- FEATURES SECTION -->
+        <section class="features-section">
+            <div class="container text-center">
+                <h2 style="font-weight: 300; margin-bottom: 3rem; font-size: 2rem;">How It Works</h2>
+
                 <div class="features-grid">
-                    <div class="card">
+                    <!-- Feature 1 -->
+                    <div class="feature-card">
                         <div class="feature-icon">📰</div>
                         <h3>Analyze News Sentiment</h3>
-                        <p>Our AI scans thousands of news articles to quantify market fear and detect panic-selling vs factual deterioration.</p>
+                        <p>Our AI scans thousands of news articles to quantify market fear and detect panic-selling vs
+                            factual deterioration.</p>
                     </div>
-                    <div class="card">
+
+                    <!-- Feature 2 -->
+                    <div class="feature-card">
                         <div class="feature-icon">💪</div>
                         <h3>Compare Fundamentals</h3>
-                        <p>We analyze financial reports using RAG to ensure the underlying business remains robust despite the headlines.</p>
+                        <p>We analyze financial reports using RAG to ensure the underlying business remains robust
+                            despite the headlines.</p>
                     </div>
-                    <div class="card">
+
+                    <!-- Feature 3 -->
+                    <div class="feature-card">
                         <div class="feature-icon">🔍</div>
                         <h3>Evidence-Based Signals</h3>
-                        <p>Get clear, confident buy/avoid signals backed by data, peer benchmarking, and contrarian logic.</p>
+                        <p>Get clear, confident buy/avoid signals backed by data, peer benchmarking, and contrarian
+                            logic.</p>
                     </div>
                 </div>
             </div>
         </section>
-    </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 ContraSignal. Built for Smart Money Hackathon.</p>
-        </div>
-    </footer>
+        <!-- FOOTER -->
+        <footer style="padding: 2rem; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.875rem;">
+            <p style="opacity: 1;">&copy; 2024 ContraSignal. Built for Smart Money Hackathon.</p>
+        </footer>
+    </div>
+
+    <!-- Logic -->
+    <script src="/static/js/landing.js"></script>
 </body>
+
 </html>
