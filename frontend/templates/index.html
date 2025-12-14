@@ -6,14 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ContraSignal | Intelligent Contrarian Investing</title>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <!-- Fonts (Soria loaded via CSS) -->
 
     <!-- Isolated Landing Styles -->
-    <link rel="stylesheet" href="/static/css/landing.css">
+    <link rel="stylesheet" href="/static/css/landing.css?v=4">
 
     <!-- Dependencies (Three.js & GSAP) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -55,7 +51,13 @@
 
                 <div id="hero-ctas" class="cta-group">
                     <a href="/analyze" class="btn-primary">
-                        Start Analysis →
+                        <span class="btn-text">Start Analysis</span>
+                        <i class="btn-icon-box" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </i>
                     </a>
                 </div>
             </div>
