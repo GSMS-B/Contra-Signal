@@ -17,11 +17,11 @@ from backend.models.schemas import (
     NewsSentiment, FundamentalMetrics, PeerComparison, ContrarianSignal,
     QuestionRequest, QuestionResponse
 )
-from backend.agents.news_analyzer import NewsAnalyzer
-from backend.agents.fundamental_analyzer import FundamentalAnalyzer
-from backend.agents.peer_comparator import PeerComparator
-from backend.agents.signal_generator import SignalGenerator
-from backend.utils.rag import FinancialRAG
+# from backend.agents.news_analyzer import NewsAnalyzer
+# from backend.agents.fundamental_analyzer import FundamentalAnalyzer
+# from backend.agents.peer_comparator import PeerComparator
+# from backend.agents.signal_generator import SignalGenerator
+# from backend.utils.rag import FinancialRAG
 
 # --- Logging Setup ---
 logging.basicConfig(level=logging.INFO)
@@ -31,19 +31,44 @@ logging.getLogger("chromadb").setLevel(logging.ERROR)
 logger = logging.getLogger(__name__)
 
 # --- Global State ---
+# --- Global State ---
 jobs = {}  # In-memory storage: {job_id: JobStatus}
 agents = {} # Holds agent instances
+
+# --- Lazy Loading Agents ---
+def get_agent(name: str):
+    """
+    Lazily loads agents to prevent deployment timeouts (e.g. on Render).
+    Heavy imports like Torch/ChromaDB happen here, not at startup.
+    """
+    if name in agents:
+        return agents[name]
+    
+    logger.info(f"Lazy loading agent: {name}...")
+    
+    if name == 'news':
+        from backend.agents.news_analyzer import NewsAnalyzer
+        agents['news'] = NewsAnalyzer()
+        
+    elif name == 'fundamental':
+        from backend.agents.fundamental_analyzer import FundamentalAnalyzer
+        agents['fundamental'] = FundamentalAnalyzer()
+        
+    elif name == 'peer':
+        from backend.agents.peer_comparator import PeerComparator
+        agents['peer'] = PeerComparator()
+        
+    elif name == 'signal':
+        from backend.agents.signal_generator import SignalGenerator
+        agents['signal'] = SignalGenerator()
+        
+    return agents[name]
 
 # --- Lifecycle ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("Initializing Agents...")
-    agents['news'] = NewsAnalyzer()
-    agents['fundamental'] = FundamentalAnalyzer()
-    agents['peer'] = PeerComparator()
-    agents['signal'] = SignalGenerator()
-    logger.info("Agents initialized.")
+    logger.info("Server starting... Agents will be loaded lazily on first use.")
     yield
     # Shutdown
     logger.info("Shutting down...")
@@ -73,38 +98,42 @@ async def process_analysis(job_id: str, company_name: str, report_type: str, fil
         # 1. News Analysis
         job.current_step = "news"
         logger.info(f"Job {job_id}: Starting News Analysis")
-        news_result = agents['news'].analyze(company_name)
+        news_agent = get_agent('news')
+        news_result = news_agent.analyze(company_name)
         job.progress = 30
         
         import time
-        print("[System] Cooling down for 5 seconds to match rate limits...")
-        time.sleep(5)
+        # print("[System] Cooling down for 5 seconds to match rate limits...")
+        # time.sleep(5)
 
         # 2. Fundamental Analysis
         job.current_step = "fundamentals"
         logger.info(f"Job {job_id}: Starting Fundamental Analysis")
         # Process PDF to RAG
-        agents['fundamental'].process_and_store(file_path, company_name, report_type, job_id)
+        fund_agent = get_agent('fundamental')
+        fund_agent.process_and_store(file_path, company_name, report_type, job_id)
         # Analyze
-        fund_result = agents['fundamental'].analyze(company_name)
+        fund_result = fund_agent.analyze(company_name)
         job.progress = 60
 
-        print("[System] Cooling down for 5 seconds...")
-        time.sleep(5)
+        # print("[System] Cooling down for 5 seconds...")
+        # time.sleep(5)
 
         # 3. Peer Comparison
         job.current_step = "peers"
         logger.info(f"Job {job_id}: Starting Peer Comparison")
-        peer_result = agents['peer'].analyze(company_name, fund_result)
+        peer_agent = get_agent('peer')
+        peer_result = peer_agent.analyze(company_name, fund_result)
         job.progress = 80
 
-        print("[System] Cooling down for 5 seconds...")
-        time.sleep(5)
+        # print("[System] Cooling down for 5 seconds...")
+        # time.sleep(5)
 
         # 4. Signal Generation
         job.current_step = "signal"
         logger.info(f"Job {job_id}: Generating Signal")
-        signal_result = agents['signal'].generate_signal(news_result, fund_result, peer_result)
+        signal_agent = get_agent('signal')
+        signal_result = signal_agent.generate_signal(news_result, fund_result, peer_result)
         job.progress = 95
 
         # Compile Result
@@ -204,6 +233,7 @@ async def ask_question(job_id: str, request: QuestionRequest):
     # Ideally RAG should persist or be accessible. 
     # Our FinancialRAG uses persistent ChromaDB, so:
     
+    from backend.utils.rag import FinancialRAG # LAZY IMPORT
     rag = FinancialRAG() # Re-init connects to existing DB
     job = jobs[job_id]
     
@@ -236,4 +266,4 @@ if __name__ == "__main__":
     import uvicorn
     import os
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=port, reload=True)
+    # uvicorn.run("backend.main:app", host="0.0.0.0", port=port, reload=True)
