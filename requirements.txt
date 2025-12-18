@@ -22,3 +22,5 @@ beautifulsoup4
 pydantic
 python-dateutil
 feedparser
+langchain-text-splitters
+gunicorn
