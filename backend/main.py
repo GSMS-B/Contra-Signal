@@ -89,7 +89,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # --- Background Task ---
-async def process_analysis(job_id: str, company_name: str, report_type: str, file_path: str):
+def process_analysis(job_id: str, company_name: str, report_type: str, file_path: str):
     try:
         job = jobs[job_id]
         job.status = "running"
@@ -166,6 +166,14 @@ async def index(request: Request):
 @app.get("/analyze")
 async def analyze_page(request: Request):
     return templates.TemplateResponse("analyze.html", {"request": request})
+
+@app.get("/favicon.ico")
+async def favicon():
+    file_path = os.path.join(STATIC_DIR, "favicon.png")
+    if os.path.exists(file_path):
+        from fastapi.responses import FileResponse
+        return FileResponse(file_path)
+    raise HTTPException(status_code=404, detail="Favicon not found")
 
 @app.get("/progress/{job_id}")
 async def analyzing_page(request: Request, job_id: str):
