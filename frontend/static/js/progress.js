@@ -146,6 +146,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const abortBtn = document.getElementById('abortBtn');
+
+    if (abortBtn) {
+        abortBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (confirm("Are you sure you want to stop the analysis?")) {
+                try {
+                    await fetch(`/api/cancel/${jobId}`, { method: 'POST' });
+                    window.location.href = '/';
+                } catch (err) {
+                    console.error("Cancellation failed", err);
+                    alert("Could not cancel job.");
+                }
+            }
+        });
+    }
+
     // Start
     checkProgress();
 });

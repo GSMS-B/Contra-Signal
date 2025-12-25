@@ -72,7 +72,7 @@
 </head>
 
 <body
-    class="bg-background-light dark:bg-background-dark font-display text-white overflow-hidden h-screen flex flex-col">
+    class="bg-background-light dark:bg-background-dark font-display text-white overflow-x-hidden min-h-screen flex flex-col">
     <!-- Top Navigation -->
     <header
         class="fixed top-0 w-full z-50 flex items-center justify-between border-b border-[#33f20d]/20 bg-surface-dark/90 backdrop-blur-md px-8 py-4">
@@ -80,7 +80,7 @@
             <div class="size-8 flex items-center justify-center rounded bg-[#33f20d]/10 border border-[#33f20d]">
                 <span class="material-symbols-outlined text-primary text-xl">radar</span>
             </div>
-            <h2 class="text-white text-lg font-bold tracking-tight uppercase">Contrarian AI <span
+            <h2 class="text-white text-lg font-bold tracking-tight uppercase">Contra Signal <span
                     class="text-primary/50 font-normal text-sm ml-2 font-mono">v2.4.1</span></h2>
         </div>
         <div class="flex items-center gap-6">
@@ -97,7 +97,8 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="relative flex-1 flex flex-col items-center justify-center w-full cyber-grid">
+    <!-- Adjusted padding to shift up but avoid header -->
+    <main class="relative flex-1 flex flex-col items-center justify-center w-full cyber-grid pt-28 pb-20">
         <!-- Background Glow Effects -->
         <div
             class="absolute inset-0 bg-gradient-to-b from-transparent via-background-dark/80 to-background-dark pointer-events-none">
@@ -217,62 +218,24 @@
             </a>
         </div>
 
-        <!-- Decorative Floating Elements -->
-        <!-- Top Left Sparkline -->
+        <!-- Bottom Right Stats - Fixed Position for visibility -->
         <div
-            class="hidden lg:block absolute top-32 left-10 w-48 p-4 rounded-xl border border-white/5 bg-surface-dark/50 backdrop-blur-sm">
-            <div class="flex justify-between text-xs font-mono text-gray-400 mb-2">
-                <span>VOLATILITY</span>
-                <span class="text-[#33f20d]">+2.4%</span>
-            </div>
-            <div class="h-10 flex items-end gap-1">
-                <div class="w-1 bg-[#33f20d]/20 h-[40%] rounded-t-sm"></div>
-                <div class="w-1 bg-[#33f20d]/40 h-[70%] rounded-t-sm"></div>
-                <div class="w-1 bg-[#33f20d]/30 h-[50%] rounded-t-sm"></div>
-                <div class="w-1 bg-[#33f20d]/60 h-[80%] rounded-t-sm"></div>
-                <div class="w-1 bg-[#33f20d] h-[60%] rounded-t-sm animate-pulse"></div>
-                <div class="w-1 bg-[#33f20d]/50 h-[40%] rounded-t-sm"></div>
-                <div class="w-1 bg-[#33f20d]/20 h-[30%] rounded-t-sm"></div>
-                <div class="w-1 bg-[#33f20d]/10 h-[20%] rounded-t-sm"></div>
-            </div>
-        </div>
-
-        <!-- Bottom Right Stats -->
-        <div
-            class="hidden lg:block absolute bottom-20 right-10 w-64 p-4 rounded-xl border border-white/5 bg-surface-dark/50 backdrop-blur-sm">
+            class="hidden lg:block fixed bottom-8 right-8 w-64 p-4 rounded-xl border border-white/5 bg-surface-dark/90 backdrop-blur-md z-50">
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <p class="text-[10px] text-gray-500 uppercase font-mono">Tokens Processed</p>
                     <p id="token-counter" class="text-lg font-mono text-white">0</p>
                 </div>
                 <div>
-                    <p class="text-[10px] text-gray-500 uppercase font-mono">Est. Time</p>
+                    <p class="text-[10px] text-gray-500 uppercase font-mono">Time Taken</p>
                     <p id="time-elapsed" class="text-lg font-mono text-[#33f20d]">0s</p>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Bottom Ticker / Data Stream -->
-    <footer class="fixed bottom-0 w-full bg-surface-dark border-t border-white/5 overflow-hidden py-2 z-40">
-        <div class="flex whitespace-nowrap animate-data-scroll w-max hover:pause">
-            <!-- Ticker Items Repeated -->
-            <div class="flex gap-8 px-4 font-mono text-xs">
-                <span class="text-gray-400">AAPL <span class="text-[#33f20d]">+1.2%</span></span>
-                <span class="text-gray-400">NVDA <span class="text-[#33f20d]">+3.4%</span></span>
-                <span class="text-gray-400">TSLA <span class="text-secondary-red">-0.8%</span></span>
-                <span class="text-gray-400">MSFT <span class="text-[#33f20d]">+0.5%</span></span>
-                <span class="text-gray-400">BTC <span class="text-[#33f20d]">+2.1%</span></span>
-                <span class="text-gray-400">ETH <span class="text-secondary-red">-1.4%</span></span>
-                <!-- Separator -->
-                <span class="text-[#33f20d] opacity-50">///</span>
-                <!-- Repeat for infinite scroll effect (simplified for brevity, CSS does the loop) -->
-                <span class="text-gray-400">AMZN <span class="text-[#33f20d]">+0.9%</span></span>
-                <span class="text-gray-400">GOOGL <span class="text-secondary-red">-0.2%</span></span>
-                <span class="text-gray-400">META <span class="text-[#33f20d]">+1.8%</span></span>
-            </div>
-        </div>
-    </footer>
+    <!-- Footer Ticker Removed -->
+
 
     <script src="/static/js/progress.js"></script>
 </body>
