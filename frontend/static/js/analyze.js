@@ -1,29 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('analysisForm');
+    const companyInput = document.getElementById('ticker'); // Changed ID from companyName
     const fileInput = document.getElementById('mainReport');
     const fileZone = document.getElementById('mainDropZone');
-    const addPeerBtn = document.getElementById('addPeerBtn');
-    const peersContainer = document.getElementById('peersList');
     const submitBtn = document.getElementById('submitBtn');
+    const fileInfo = document.getElementById('fileInfo');
 
-    // Drag and Drop
-    fileZone.addEventListener('click', () => fileInput.click());
+    // Drag and Drop Logic
+    fileZone.addEventListener('click', (e) => {
+        // Prevent recursive clicking if clicking on the input itself (though it's hidden)
+        if (e.target !== fileInput) {
+            fileInput.click();
+        }
+    });
 
     fileZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        fileZone.classList.add('border-primary');
+        fileZone.classList.add('border-primary', 'bg-black/40');
+        fileZone.classList.remove('bg-black/20');
     });
 
     fileZone.addEventListener('dragleave', () => {
-        fileZone.classList.remove('border-primary');
+        fileZone.classList.remove('border-primary', 'bg-black/40');
+        fileZone.classList.add('bg-black/20');
     });
 
     fileZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        fileZone.classList.remove('border-primary');
+        fileZone.classList.remove('border-primary', 'bg-black/40');
+        fileZone.classList.add('bg-black/20');
+        
         if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            updateFileName(fileInput.files[0].name);
+            // Only accept PDF
+            const file = e.dataTransfer.files[0];
+            if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileName(file.name);
+            } else {
+                alert("Please upload a PDF file only.");
+            }
         }
     });
 
@@ -34,85 +49,66 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updateFileName(name) {
-        // Show file info in the separate div, NOT overwriting the dropzone
-        const infoDiv = document.getElementById('mainFileInfo');
-        infoDiv.style.display = 'block';
-        infoDiv.innerHTML = `<p class="text-sm text-gray-600">Selected: <strong>${name}</strong></p>`;
-
-        // Add visual cue to dropzone
-        fileZone.style.borderColor = 'var(--primary-color)';
-        fileZone.style.backgroundColor = '#EFF6FF';
-
+        // Show file info
+        fileInfo.classList.remove('hidden');
+        fileInfo.textContent = `SELECTED: ${name}`;
+        
+        // Visual cue on dropzone
+        fileZone.classList.add('border-primary');
         validateForm();
     }
 
-    // Dynamic Peers
-    addPeerBtn.addEventListener('click', () => {
-        if (peersContainer.children.length >= 3) return;
-
-        const div = document.createElement('div');
-        div.className = 'flex gap-2 mb-2 peer-entry';
-        div.innerHTML = `
-            <input type="text" name="peers" placeholder="Competitor Name" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            <button type="button" class="text-red-500 hover:text-red-700 remove-peer">&times;</button>
-        `;
-        peersContainer.appendChild(div);
-
-        // Add remove listener
-        div.querySelector('.remove-peer').addEventListener('click', () => {
-            div.remove();
-        });
-    });
-
-    // Form Validation
-    const companyInput = document.getElementById('companyName');
+    // Form Validation (Simple check as requested)
     [companyInput, fileInput].forEach(el => {
         el.addEventListener('input', validateForm);
         el.addEventListener('change', validateForm);
     });
 
     function validateForm() {
-        // Simple check
-        const isValid = companyInput.value.trim() && fileInput.files.length > 0;
-
-        if (isValid) {
+        const hasCompany = companyInput.value.trim().length > 0;
+        const hasFile = fileInput.files.length > 0;
+        
+        if (hasCompany && hasFile) {
             submitBtn.disabled = false;
-            submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
         } else {
             submitBtn.disabled = true;
-            submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
         }
     }
 
     // Submission
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Visual feedback
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Uploading...';
+        const btnContent = submitBtn.querySelector('span'); // The span with text and icon
+        const originalContent = btnContent.innerHTML;
+        btnContent.innerHTML = `<span class="material-symbols-outlined animate-spin">refresh</span> UPLOADING...`;
 
         const formData = new FormData(form);
-
+        // Ensure company_name is set (input name="company_name" in HTML handles this automatically)
+        
         try {
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 body: formData
             });
+
             const data = await response.json();
 
             if (response.ok) {
+                // Redirect to progress page
                 window.location.href = `/progress/${data.job_id}`;
             } else {
-                alert('Analysis failed: ' + (data.detail || 'Unknown error'));
+                alert('Analysis initiation failed: ' + (data.detail || 'Unknown error'));
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Start Analysis';
+                btnContent.innerHTML = originalContent;
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred.');
+            alert('Network or Server Error.');
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Start Analysis';
+            btnContent.innerHTML = originalContent;
         }
     });
 
