@@ -95,6 +95,8 @@ def process_analysis(job_id: str, company_name: str, report_type: str, file_path
         job.status = "running"
         job.progress = 10
         
+        if job.status == "cancelled": return
+
         # 1. News Analysis
         job.current_step = "news"
         logger.info(f"Job {job_id}: Starting News Analysis")
@@ -102,6 +104,8 @@ def process_analysis(job_id: str, company_name: str, report_type: str, file_path
         news_result = news_agent.analyze(company_name)
         job.progress = 30
         
+        if job.status == "cancelled": return
+
         import time
         # print("[System] Cooling down for 5 seconds to match rate limits...")
         # time.sleep(5)
@@ -116,6 +120,8 @@ def process_analysis(job_id: str, company_name: str, report_type: str, file_path
         fund_result = fund_agent.analyze(company_name)
         job.progress = 60
 
+        if job.status == "cancelled": return
+
         # print("[System] Cooling down for 5 seconds...")
         # time.sleep(5)
 
@@ -126,6 +132,8 @@ def process_analysis(job_id: str, company_name: str, report_type: str, file_path
         peer_result = peer_agent.analyze(company_name, fund_result)
         job.progress = 80
 
+        if job.status == "cancelled": return
+
         # print("[System] Cooling down for 5 seconds...")
         # time.sleep(5)
 
@@ -135,6 +143,8 @@ def process_analysis(job_id: str, company_name: str, report_type: str, file_path
         signal_agent = get_agent('signal')
         signal_result = signal_agent.generate_signal(news_result, fund_result, peer_result)
         job.progress = 95
+        
+        if job.status == "cancelled": return
 
         # Compile Result
         final_result = AnalysisResult(
@@ -269,6 +279,15 @@ async def ask_question(job_id: str, request: QuestionRequest):
         traceback.print_exc()
         print(f"!!! [Q&A] ERROR: {e}")
         return QuestionResponse(answer=f"I'm sorry, I encountered an error: {str(e)}")
+
+@app.post("/api/cancel/{job_id}")
+async def cancel_job(job_id: str):
+    if job_id not in jobs:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Mark as cancelled. The background thread checks this status.
+    jobs[job_id].status = "cancelled"
+    return {"status": "cancelled"}
 
 if __name__ == "__main__":
     import uvicorn
