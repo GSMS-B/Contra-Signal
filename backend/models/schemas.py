@@ -46,8 +46,10 @@ class ContrarianSignal(BaseModel):
     risk_factors: List[str]
     management_outlook: str
     future_development: str
+    future_development: str
     timeframe: str
     entry_strategy: str
+    competitive_moats: List[str]
 
 class AnalysisResult(BaseModel):
     company_name: str
