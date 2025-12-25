@@ -36,7 +36,8 @@ class SignalGenerator:
             "management_outlook": "Summarize key managerial decisions or strategic pivots mentioned in reports",
             "future_development": "Summarize future growth plans, R&D, or expansion goals",
             "timeframe": "e.g. 3-6 months",
-            "entry_strategy": "e.g. Staggered buying"
+            "entry_strategy": "e.g. Staggered buying",
+            "competitive_moats": ["moat1 (e.g. High switching costs)", "moat2 (e.g. Network effect)"]
         }}
         """
 
@@ -54,5 +55,5 @@ class SignalGenerator:
                 signal_type="Hold", signal_strength=5, confidence="Low",
                 summary=f"Analysis failed: {str(e)}", opportunity_reasons=[], risk_factors=[],
                 management_outlook="Unknown", future_development="Unknown",
-                timeframe="Unknown", entry_strategy="Wait"
+                timeframe="Unknown", entry_strategy="Wait", competitive_moats=[]
             )
