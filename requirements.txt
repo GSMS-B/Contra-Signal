@@ -24,3 +24,4 @@ python-dateutil
 feedparser
 langchain-text-splitters
 gunicorn
+pypdf
