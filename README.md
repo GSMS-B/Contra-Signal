@@ -117,7 +117,7 @@ While traditional tools analyze news OR fundamentals in isolation, ContraSignal 
     ```bash
     python run.py
     ```
-5.**You can access the webite in Hugging face spaces**
-   ```bash
-    https://gsms-b-contra-signal.hf.space/
-   ```
+5.**Live Demo**
+
+Access the **Contra-Signal** app here: [https://gsms-b-contra-signal.hf.space/](https://gsms-b-contra-signal.hf.space/)
+
