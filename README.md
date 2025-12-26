@@ -70,3 +70,48 @@ While traditional tools analyze news OR fundamentals in isolation, ContraSignal 
 **Value Proposition**: Transform market panic into investment opportunity by filtering noise from signal, helping investors make rational, evidence-based decisions when others react emotionally.
 
 **Innovation**: First AI system to combine real-time sentiment analysis, fundamental financial assessment, and peer benchmarking into unified contrarian opportunity detection—automating what institutional investors do manually and making it accessible to everyone.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.8+
+- [Git](https://git-scm.com/)
+
+### Installation & Setup
+
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/GSMS-B/Contra-Signal.git
+    cd Contra-Signal
+    ```
+
+2.  **Environment Configuration (CRITICAL)**
+    *   This project uses sensitive API keys that are **not** stored in the repository.
+    *   We provide a template file `.env.template` with the required variable names.
+
+    **Step-by-Step:**
+    *   Copy the template to create your local `.env` file:
+        *   **Windows (PowerShell):** `copy .env.template .env`
+        *   **Mac/Linux:** `cp .env.template .env`
+    *   Open the new `.env` file in your editor.
+    *   Replace the placeholder text with your actual API keys:
+        ```ini
+        # .env
+        NEWS_API_KEY=your_actual_news_api_key_here
+        GEMINI_API_KEY=your_actual_gemini_key_here
+        ```
+    > **Note:** The `.env` file is ignored by git to keep your secrets safe.
+
+3.  **Install Dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Run the Application**
+    ```bash
+    python run.py
+    ```
+
