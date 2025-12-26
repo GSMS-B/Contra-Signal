@@ -103,6 +103,9 @@ While traditional tools analyze news OR fundamentals in isolation, ContraSignal 
         NEWS_API_KEY=your_actual_news_api_key_here
         GEMINI_API_KEY=your_actual_gemini_key_here
         ```
+        *   **Get NewsAPI Key:** [https://newsapi.org/](https://newsapi.org/)
+        *   **Get Gemini Key:** [https://aistudio.google.com/](https://aistudio.google.com/)
+
     > **Note:** The `.env` file is ignored by git to keep your secrets safe.
 
 3.  **Install Dependencies**
