@@ -31,3 +31,8 @@ MANIFEST
 # Application Specific
 *.pdf
 chroma_db/
+.env
+
+# User Data & Uploads
+uploads/*
+!uploads/.gitkeep
