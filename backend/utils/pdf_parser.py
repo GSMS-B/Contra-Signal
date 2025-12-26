@@ -12,14 +12,15 @@ class PDFParser:
             raise FileNotFoundError(f"PDF not found: {pdf_path}")
 
     def extract_text(self) -> str:
-        """Extracts full text from PDF."""
+        """Extracts full text from PDF using pypdf (faster)."""
+        import pypdf
         full_text = []
         try:
-            with pdfplumber.open(self.pdf_path) as pdf:
-                for i, page in enumerate(pdf.pages):
-                    text = page.extract_text()
-                    if text:
-                        full_text.append(f"--- Page {i+1} ---\n{text}")
+            reader = pypdf.PdfReader(self.pdf_path)
+            for i, page in enumerate(reader.pages):
+                text = page.extract_text()
+                if text:
+                    full_text.append(f"--- Page {i+1} ---\n{text}")
             return "\n\n".join(full_text)
         except Exception as e:
             logger.error(f"Error extracting text from {self.pdf_path}: {e}")

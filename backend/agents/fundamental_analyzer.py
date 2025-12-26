@@ -19,12 +19,22 @@ class FundamentalAnalyzer:
         self.table_extractor = FinancialTableExtractor()
 
     def process_and_store(self, pdf_path: str, company_name: str, report_type: str, job_id: str):
+        import time
+        t_start = time.time()
+        
         # Extract Text
+        print(f"[Fundamental Analyzer] Starting PDF Extraction for {pdf_path}...")
         parser = self.pdf_parser(pdf_path)
         text = parser.extract_text()
+        t_pdf = time.time()
+        print(f"[Fundamental Analyzer] PDF Extraction took {t_pdf - t_start:.2f}s. Length: {len(text)} chars.")
         
         # Store in RAG
+        print(f"[Fundamental Analyzer] Starting RAG Ingestion...")
         self.rag.add_document(text, company_name, report_type, job_id)
+        t_rag = time.time()
+        print(f"[Fundamental Analyzer] RAG Ingestion took {t_rag - t_pdf:.2f}s.")
+        print(f"[Fundamental Analyzer] Total Process Time: {t_rag - t_start:.2f}s.")
         
         # Tables (optional for now, can add to context later)
         # tables = parser.extract_tables()
