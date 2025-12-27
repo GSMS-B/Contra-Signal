@@ -67,7 +67,18 @@ def get_agent(name: str):
 # --- Lifecycle ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    # Init Ticker Database
+    from backend.utils.ticker_db import get_ticker_db
+    # Assuming CSV is at backend/data/stocks.csv
+    try:
+        db = get_ticker_db()
+        # Adjust path relative to project root or use config
+        csv_path = os.path.join(os.path.dirname(__file__), "data", "stocks.csv")
+        logger.info(f"Loading stock data from: {csv_path}")
+        db.load_data(csv_path)
+    except Exception as e:
+        logger.error(f"Failed to load ticker database: {e}")
+
     logger.info("Server starting... Agents will be loaded lazily on first use.")
     yield
     # Shutdown
@@ -115,6 +126,8 @@ def process_analysis(job_id: str, company_name: str, report_type: str, file_path
         logger.info(f"Job {job_id}: Starting Fundamental Analysis")
         # Process PDF to RAG
         fund_agent = get_agent('fundamental')
+        # Inject CSV Data here if needed, but for now just process PDF
+        # We might need to pass the ticker DB for verification later, but keeping it simple for now
         fund_agent.process_and_store(file_path, company_name, report_type, job_id)
         # Analyze
         fund_result = fund_agent.analyze(company_name)
@@ -198,6 +211,19 @@ async def results_page(request: Request, job_id: str):
         # In real app, handle gracefully
         pass
     return templates.TemplateResponse("results.html", {"request": request})
+
+@app.get("/api/search")
+async def search_companies(q: str):
+    """
+    Search for companies by name.
+    """
+    if not q:
+        return []
+    
+    from backend.utils.ticker_db import get_ticker_db
+    db = get_ticker_db()
+    results = db.search_names(q)
+    return results
 
 @app.post("/api/analyze")
 async def start_analysis(

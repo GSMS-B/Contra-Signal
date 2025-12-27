@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('mainReport');
     const fileZone = document.getElementById('mainDropZone'); // This is the <label>
     const submitBtn = document.getElementById('submitBtn');
+    const suggestionsList = document.getElementById('ticker-suggestions');
+    const readyIndicator = document.getElementById('companyReadyIndicator');
 
     // Store original content to restore it later
     // We target the first child div which contains the visual elements
@@ -14,6 +16,80 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Critical elements missing in DOM");
         return;
     }
+
+    // --- Autocomplete Logic ---
+    let debounceTimer;
+    let isTickerValid = false;
+
+    companyInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+
+        // INVALIDATE on any typing
+        isTickerValid = false;
+        if (readyIndicator) readyIndicator.classList.remove('opacity-100');
+        validateForm();
+
+        clearTimeout(debounceTimer);
+
+        if (query.length < 2) {
+            hideSuggestions();
+            return;
+        }
+
+        debounceTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const matches = await res.json();
+                renderSuggestions(matches);
+            } catch (err) {
+                console.error("Search failed", err);
+            }
+        }, 300);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!companyInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+
+    function renderSuggestions(matches) {
+        suggestionsList.innerHTML = '';
+        if (!matches || matches.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        matches.forEach(name => {
+            const li = document.createElement('li');
+            li.className = "px-6 py-3 cursor-pointer hover:bg-white/5 transition-colors text-gray-300 hover:text-primary font-mono text-sm flex items-center gap-2";
+            li.innerHTML = `<span class="material-symbols-outlined text-xs opacity-50">show_chart</span> ${name}`;
+
+            li.addEventListener('click', () => {
+                companyInput.value = name;
+
+                // VALIDATE on click
+                isTickerValid = true;
+                if (readyIndicator) readyIndicator.classList.add('opacity-100');
+
+                hideSuggestions();
+                validateForm();
+            });
+            suggestionsList.appendChild(li);
+        });
+
+        showSuggestions();
+    }
+
+    function showSuggestions() {
+        suggestionsList.classList.remove('hidden');
+    }
+
+    function hideSuggestions() {
+        suggestionsList.classList.add('hidden');
+    }
+    // -----------------------
 
     // 1. Drag and Drop Logic
     // Prevent default behaviors
@@ -138,12 +214,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Validation Logic
     [companyInput, fileInput].forEach(el => {
-        el.addEventListener('input', validateForm);
-        el.addEventListener('change', validateForm);
+        // NOTE: We don't use 'input' listener here for companyInput anymore 
+        // because we handle it in the debounce logic above, but keeping fileInput checks is fine.
+        // Actually, we just need to ensure validateForm is called.
+        // It is called in the debounce input handler, so we can leave fileInput here.
+        if (el === fileInput) {
+            el.addEventListener('change', validateForm);
+        }
     });
 
     function validateForm() {
-        const hasCompany = companyInput.value.trim().length > 0;
+        // STRICT CHECK: isTickerValid must be true
+        const hasCompany = isTickerValid;
         // Check files length
         const hasFile = fileInput.files && fileInput.files.length > 0;
 

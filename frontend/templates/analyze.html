@@ -154,11 +154,16 @@
                                 for="ticker">
                                 ENTER TARGET COMPANY
                             </label>
-                            <div
-                                class="absolute right-0 bottom-4 opacity-0 peer-focus:opacity-100 transition-opacity flex items-center gap-2 text-primary font-mono text-sm">
+                            <div id="companyReadyIndicator"
+                                class="absolute right-0 bottom-4 opacity-0 transition-opacity flex items-center gap-2 text-primary font-mono text-sm pointer-events-none">
                                 <span class="material-symbols-outlined text-lg">check_circle</span>
                                 <span>READY</span>
                             </div>
+                            <!-- Autocomplete Suggestions -->
+                            <ul id="ticker-suggestions"
+                                class="absolute z-50 w-full mt-2 bg-surface-dark/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] hidden max-h-60 overflow-y-auto overflow-x-hidden divide-y divide-white/5 no-scrollbar">
+                                <!-- Items injected by JS -->
+                            </ul>
                         </div>
 
                         <!-- Configuration Section -->
