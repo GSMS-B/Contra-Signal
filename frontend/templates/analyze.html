@@ -166,6 +166,25 @@
                             </ul>
                         </div>
 
+                        <!-- Optional Competitor Input (Multiple) -->
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <button type="button" id="addCompetitorBtn"
+                                    class="px-4 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-mono text-gray-400 hover:text-primary transition-all flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-base">add_circle</span>
+                                    Add Competitor (Optional)
+                                </button>
+                                <span class="text-xs text-gray-600 font-mono hidden md:block">MAX 3 COMPETITORS</span>
+                            </div>
+
+                            <!-- Container for dynamic inputs -->
+                            <div id="competitorsList" class="flex flex-col gap-4">
+                                <!-- Dynamic rows will be added here -->
+                            </div>
+                            <!-- Hidden input to store comma-separated list for backend -->
+                            <input type="hidden" name="manual_competitors_list" id="manualCompetitorsJson">
+                        </div>
+
                         <!-- Configuration Section -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
                             <!-- Data Source Selector -->

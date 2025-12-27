@@ -18,46 +18,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Autocomplete Logic ---
-    let debounceTimer;
-    let isTickerValid = false;
+    const setupAutocomplete = (inputEl, listEl, indicatorEl, onValidateState) => {
+        let debounceTimer;
 
-    companyInput.addEventListener('input', (e) => {
-        const query = e.target.value.trim();
+        inputEl.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
 
-        // INVALIDATE on any typing
-        isTickerValid = false;
-        if (readyIndicator) readyIndicator.classList.remove('opacity-100');
-        validateForm();
+            // INVALIDATE on any typing
+            onValidateState(false);
+            if (indicatorEl) indicatorEl.classList.remove('opacity-100');
+            validateForm();
 
-        clearTimeout(debounceTimer);
+            clearTimeout(debounceTimer);
 
-        if (query.length < 2) {
-            hideSuggestions();
-            return;
-        }
-
-        debounceTimer = setTimeout(async () => {
-            try {
-                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-                const matches = await res.json();
-                renderSuggestions(matches);
-            } catch (err) {
-                console.error("Search failed", err);
+            if (query.length < 2) {
+                hideSuggestions(listEl);
+                return;
             }
-        }, 300);
-    });
 
-    // Hide suggestions when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!companyInput.contains(e.target) && !suggestionsList.contains(e.target)) {
-            hideSuggestions();
-        }
-    });
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                    const matches = await res.json();
+                    renderSuggestions(matches, inputEl, listEl, indicatorEl, onValidateState);
+                } catch (err) {
+                    console.error("Search failed", err);
+                }
+            }, 300);
+        });
 
-    function renderSuggestions(matches) {
-        suggestionsList.innerHTML = '';
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!inputEl.contains(e.target) && !listEl.contains(e.target)) {
+                hideSuggestions(listEl);
+            }
+        });
+    };
+
+    function renderSuggestions(matches, inputEl, listEl, indicatorEl, onValidateState) {
+        listEl.innerHTML = '';
         if (!matches || matches.length === 0) {
-            hideSuggestions();
+            hideSuggestions(listEl);
             return;
         }
 
@@ -67,27 +68,129 @@ document.addEventListener('DOMContentLoaded', () => {
             li.innerHTML = `<span class="material-symbols-outlined text-xs opacity-50">show_chart</span> ${name}`;
 
             li.addEventListener('click', () => {
-                companyInput.value = name;
+                inputEl.value = name;
 
                 // VALIDATE on click
-                isTickerValid = true;
-                if (readyIndicator) readyIndicator.classList.add('opacity-100');
+                onValidateState(true);
+                if (indicatorEl) indicatorEl.classList.add('opacity-100');
 
-                hideSuggestions();
+                hideSuggestions(listEl);
                 validateForm();
             });
-            suggestionsList.appendChild(li);
+            listEl.appendChild(li);
         });
 
-        showSuggestions();
+        listEl.classList.remove('hidden');
     }
 
-    function showSuggestions() {
-        suggestionsList.classList.remove('hidden');
+    function hideSuggestions(listEl) {
+        listEl.classList.add('hidden');
     }
 
-    function hideSuggestions() {
-        suggestionsList.classList.add('hidden');
+    // Main Ticker Setup
+    let isTickerValid = false;
+    setupAutocomplete(companyInput, suggestionsList, readyIndicator, (isValid) => { isTickerValid = isValid; });
+
+    // --- Dynamic Competitor Logic ---
+    const addCompetitorBtn = document.getElementById('addCompetitorBtn');
+    const competitorsList = document.getElementById('competitorsList');
+    const manualCompetitorsJson = document.getElementById('manualCompetitorsJson');
+
+    // Track validity of each row by ID
+    const competitorValidityMap = new Map();
+
+    if (addCompetitorBtn && competitorsList) {
+        addCompetitorBtn.addEventListener('click', () => {
+            // MAX 3 Limit
+            if (competitorsList.children.length >= 3) {
+                // Shake button or show toast? Just alert for now or ignore
+                return;
+            }
+            addCompetitorRow();
+        });
+    }
+
+    function addCompetitorRow() {
+        const rowId = 'comp-' + Date.now();
+        const row = document.createElement('div');
+        row.className = "relative group animate-in fade-in slide-in-from-top-2 duration-300";
+        row.id = rowId;
+
+        // Mark as invalid initially if empty, but we treat empty as valid in final check
+        // However, if user types, it MUST be valid.
+        competitorValidityMap.set(rowId, false);
+
+        row.innerHTML = `
+            <input
+                class="block py-3 px-0 w-full text-xl md:text-2xl font-mono text-white bg-transparent border-0 border-b-2 border-dashed border-gray-700 appearance-none focus:outline-none focus:ring-0 focus:border-primary peer transition-colors placeholder-transparent tracking-widest pr-10"
+                id="input-${rowId}" placeholder=" " type="text" autocomplete="off" />
+            <label
+                class="peer-focus:font-medium absolute text-xs md:text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                for="input-${rowId}">
+                COMPETITOR ${competitorsList.children.length + 1}
+            </label>
+            
+            <div id="ready-${rowId}"
+                class="absolute right-0 bottom-3 opacity-0 transition-opacity flex items-center gap-2 text-primary font-mono text-xs pointer-events-none">
+                <span class="material-symbols-outlined text-base">check_circle</span>
+            </div>
+
+            <!-- Remove Button (Hover only) -->
+            <button type="button" class="absolute -right-8 top-3 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110" 
+                onclick="removeCompetitorRow('${rowId}')">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+
+            <!-- Autocomplete List -->
+            <ul id="list-${rowId}"
+                class="absolute z-50 w-full mt-2 bg-surface-dark/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] hidden max-h-60 overflow-y-auto overflow-x-hidden divide-y divide-white/5 no-scrollbar">
+            </ul>
+        `;
+
+        competitorsList.appendChild(row);
+
+        const inputEl = row.querySelector('input');
+        const listEl = row.querySelector('ul');
+        const readyEl = row.querySelector(`#ready-${rowId}`);
+
+        // Attach Autocomplete
+        setupAutocomplete(inputEl, listEl, readyEl, (isValid) => {
+            competitorValidityMap.set(rowId, isValid);
+            updateCompetitorJson(); // Update hidden form field
+        });
+
+        // Add focus immediately
+        inputEl.focus();
+        validateForm();
+
+        // Re-check Max Limit to disable Add button style? (Optional)
+    }
+
+    // Global function for onclick to work
+    window.removeCompetitorRow = function (rowId) {
+        const row = document.getElementById(rowId);
+        if (row) {
+            row.remove();
+            competitorValidityMap.delete(rowId);
+            updateCompetitorJson();
+            validateForm();
+        }
+    }
+
+    function updateCompetitorJson() {
+        // Collect all VALID inputs
+        const names = [];
+        competitorsList.querySelectorAll('input').forEach(input => {
+            const val = input.value.trim();
+            // We assume if it's in the validity map as TRUE, it's a valid ticker
+            // But we actually trust the validity map more.
+            // However, get the ID from parent
+            const rowId = input.parentElement.id;
+            if (val.length > 0 && competitorValidityMap.get(rowId)) {
+                names.push(val);
+            }
+        });
+        manualCompetitorsJson.value = names.join(',');
     }
     // -----------------------
 
@@ -229,7 +332,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check files length
         const hasFile = fileInput.files && fileInput.files.length > 0;
 
-        if (hasCompany && hasFile) {
+        // Competitor Check (Multi-Row):
+        let isCompetitorSafe = true;
+
+        // Iterate all active inputs
+        if (competitorsList) {
+            const inputs = competitorsList.querySelectorAll('input');
+            inputs.forEach(input => {
+                const val = input.value.trim();
+                const rowId = input.parentElement.id;
+                const isValid = competitorValidityMap.get(rowId);
+
+                // If has text, MUST be valid
+                if (val.length > 0 && !isValid) {
+                    isCompetitorSafe = false;
+                }
+            });
+        }
+
+        if (hasCompany && hasFile && isCompetitorSafe) {
             submitBtn.disabled = false;
             submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             submitBtn.classList.add('shadow-neon', 'hover:scale-105');

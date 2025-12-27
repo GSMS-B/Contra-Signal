@@ -39,15 +39,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // --- Header ---
         try {
             document.getElementById('companyTicker').textContent = company_name.toUpperCase();
-            document.getElementById('companyName').textContent = "Unknown Sector"; // Default fallback
-            // Use regex to try to find a ticker in the name if possible, otherwise leave generic
+            // Use sector + name fallback
+            const sector = fundamentals.sector || "Unknown Sector";
+            let displayName = company_name;
             if (company_name.includes('(')) {
-                const match = company_name.match(/\((.*?)\)/);
-                if (match) {
-                    document.getElementById('companyTicker').textContent = match[1];
-                    document.getElementById('companyName').textContent = company_name.split('(')[0];
-                }
+                displayName = company_name.split('(')[0];
             }
+            document.getElementById('companyName').textContent = `${sector} | ${displayName}`;
 
             document.getElementById('analysisDate').textContent = new Date(analysis_date).toLocaleDateString() + " " + new Date(analysis_date).toLocaleTimeString();
 
@@ -72,18 +70,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const rotation = (score * 9);
             const needle = document.getElementById('marketGaugeNeedle');
             if (needle) {
-                // Initial rotation is -90 (pointing left? No, standard is 0 up).
-                // CSS set initial to -90 (left). We want fear (left) to greed (right).
-                // If CSS start is -90deg (bottom-left?), let's adjust.
-                // Standard semi-circle gauge: 
-                // Left (-10) = -90deg, Right (+10) = +90deg.
-                // 0 = 0deg (Vertical).
                 needle.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
             }
 
             const textElem = document.getElementById('marketPsycheText');
-            if (score < -3) { textElem.textContent = "Fear"; textElem.classList.add('danger-text'); }
-            else if (score > 3) { textElem.textContent = "Greed"; textElem.classList.add('neon-text'); }
+            if (score <= -3) { textElem.textContent = "Fear"; textElem.classList.add('danger-text'); }
+            else if (score >= 3) { textElem.textContent = "Greed"; textElem.classList.add('neon-text'); }
             else { textElem.textContent = "Neutral"; textElem.style.color = "gray"; }
 
             document.getElementById('marketPsycheSignal').textContent = `Sentiment Score: ${score}/10`;
@@ -100,6 +92,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             document.getElementById('newsPosBar').style.width = `${posPct}%`;
             document.getElementById('newsPosText').textContent = `${posPct}%`;
+            // FIX: Make positive text black for visibility on green
+            document.getElementById('newsPosText').classList.add('text-black');
+            document.getElementById('newsPosText').classList.remove('text-white'); // ensure
 
             document.getElementById('newsNegBar').style.width = `${negPct}%`;
             document.getElementById('newsNegText').textContent = `${negPct}%`;
@@ -107,30 +102,55 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('newsNeuBar').style.width = `${neuPct}%`;
             document.getElementById('newsNeuText').textContent = `${neuPct}%`;
 
-            // Headlines Capsules
+            // Headlines Capsules (Top 8)
             const headlinesGrid = document.getElementById('newsHeadlinesGrid');
             headlinesGrid.innerHTML = '';
 
             const headlines = Array.isArray(news.headlines) ? news.headlines : [];
-            // We don't have sentiment per headline in the schema, using random assignment for visual variety or neutral default?
-            // User requested coloring: Green (Pos), Red (Neg), Gray (Neu).
-            // Since we don't have granular analysis per headline here, we will infer or cycle colors.
-            // A "Senior" way is to do simple sentiment keyword matching on the headline itself.
 
+            // Show top 8 in capsules
             headlines.slice(0, 8).forEach(h => {
                 let colorClass = 'text-gray-400 border-white/5 bg-[#1e293b]'; // Default
                 const lower = h.toLowerCase();
                 if (lower.includes('gain') || lower.includes('up') || lower.includes('rally') || lower.includes('high') || lower.includes('growth')) {
-                    colorClass = 'text-primary border-primary/20 bg-primary/10';
+                    colorClass = 'text-black bg-primary/80 border-primary/20 font-bold'; // Green pill
                 } else if (lower.includes('loss') || lower.includes('down') || lower.includes('crash') || lower.includes('risk') || lower.includes('miss')) {
-                    colorClass = 'text-danger border-danger/20 bg-danger/10';
+                    colorClass = 'text-white bg-danger/80 border-danger/20 font-bold'; // Red pill
                 }
 
                 const span = document.createElement('span');
-                span.className = `px-3 py-1.5 rounded-full border text-xs font-mono hover:bg-white/5 cursor-default transition-colors ${colorClass}`;
-                span.textContent = h.length > 40 ? h.substring(0, 40) + '...' : h;
+                span.className = `px-3 py-1.5 rounded-full border text-xs font-mono hover:scale-105 cursor-default transition-all ${colorClass}`;
+                span.textContent = h.length > 50 ? h.substring(0, 50) + '...' : h;
                 headlinesGrid.appendChild(span);
             });
+
+            // "View All" Logic
+            const viewAllBtn = document.getElementById('viewAllHeadlinesBtn');
+            const modal = document.getElementById('headlinesModal');
+            const modalList = document.getElementById('allHeadlinesList');
+            const closeBtn = document.getElementById('closeHeadlinesModal');
+            const modalBg = document.getElementById('headlinesModalBg');
+
+            if (headlines.length > 8) {
+                viewAllBtn.classList.remove('hidden');
+
+                viewAllBtn.onclick = () => {
+                    modalList.innerHTML = ''; // Clear
+                    headlines.forEach(h => {
+                        const div = document.createElement('div');
+                        div.className = "p-3 border-b border-white/5 text-sm text-gray-300 hover:bg-white/5 transition-colors";
+                        div.textContent = h;
+                        modalList.appendChild(div);
+                    });
+                    modal.classList.remove('hidden');
+                };
+
+                const closeModal = () => modal.classList.add('hidden');
+                closeBtn.onclick = closeModal;
+                modalBg.onclick = closeModal;
+            } else {
+                viewAllBtn.classList.add('hidden');
+            }
 
         } catch (e) { console.error("Error rendering News:", e); }
 
@@ -174,11 +194,99 @@ document.addEventListener('DOMContentLoaded', async () => {
         // --- Fundamental Strength ---
         try {
             document.getElementById('fundHealthScore').textContent = `${fundamentals.health_score}/10`;
-            document.getElementById('fundGrowth').textContent = `${fundamentals.revenue_growth}%`;
-            document.getElementById('fundMargin').textContent = `${fundamentals.profit_margin}%`;
-            document.getElementById('fundROE').textContent = `${fundamentals.roe}%`;
-            document.getElementById('fundDebt').textContent = fundamentals.debt_to_equity;
+            document.getElementById('fundGrowth').textContent = `${(fundamentals.revenue_growth || 0).toFixed(1)}%`;
+            document.getElementById('fundMargin').textContent = `${(fundamentals.profit_margin || 0).toFixed(1)}%`;
+            document.getElementById('fundROE').textContent = `${(fundamentals.roe || 0).toFixed(1)}%`;
+            document.getElementById('fundDebt').textContent = (fundamentals.debt_to_equity || 0).toFixed(2);
         } catch (e) { console.error("Error rendering Fundamentals:", e); }
+
+        // --- NEW: Detailed Metrics Grid ---
+        try {
+            const f = fundamentals;
+            const setTxt = (id, val, suffix = '') => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val !== undefined && val !== null ? val + suffix : '--';
+            };
+            const setCol = (id, val) => {
+                const el = document.getElementById(id);
+                if (el && typeof val === 'number') {
+                    if (val > 0) el.className = "font-mono font-bold text-lg text-primary";
+                    else if (val < 0) el.className = "font-mono font-bold text-lg text-danger";
+                    else el.className = "font-mono font-bold text-lg text-white";
+                }
+            };
+
+            setTxt('d_marketCap', f.market_cap ? f.market_cap.toLocaleString() : '--', ' Cr');
+            setTxt('d_pe', f.pe_ratio);
+            setTxt('d_indPe', f.industry_pe);
+            setTxt('d_pb', f.pb_ratio);
+            setTxt('d_div', f.dividend_yield, '%');
+            setTxt('d_eps', f.eps);
+            setTxt('d_roe', f.roe, '%');
+            setTxt('d_roce', f.roce, '%');
+
+            setTxt('d_ret1y', f.returns_1y, '%'); setCol('d_ret1y', f.returns_1y);
+            setTxt('d_ret3y', f.returns_3y, '%'); setCol('d_ret3y', f.returns_3y);
+            setTxt('d_ret5y', f.returns_5y, '%'); setCol('d_ret5y', f.returns_5y);
+
+            setTxt('d_high', f['52W High'] || f.fifty_two_week_high || 0); // Handle varying key names if schema differs
+            setTxt('d_low', f['52W Low'] || f.fifty_two_week_low || 0);
+
+        } catch (e) { console.error("Error rendering Detailed Metrics:", e); }
+
+        // --- NEW: Peer Comparison Table ---
+        try {
+            const tbody = document.getElementById('peerTableBody');
+            tbody.innerHTML = '';
+
+            const peerMap = peers.peer_metrics || {};
+            // Add Target Company first for comparison? Or just peers. Let's add peers.
+            // Be nice to show Target vs Peers. 
+            // Let's add Target as the first row highlighted
+            const rows = [];
+
+            // Target Row
+            rows.push({
+                name: company_name,
+                mc: fundamentals.market_cap,
+                pe: fundamentals.pe_ratio,
+                roe: fundamentals.roe,
+                roce: fundamentals.roce,
+                ret: fundamentals.returns_1y,
+                isTarget: true
+            });
+
+            // Peers
+            for (const [pName, pM] of Object.entries(peerMap)) {
+                rows.push({
+                    name: pName,
+                    mc: pM.market_cap,
+                    pe: pM.pe_ratio,
+                    roe: pM.roe,
+                    roce: pM.roce,
+                    ret: pM.returns_1y,
+                    isTarget: false
+                });
+            }
+
+            rows.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = r.isTarget ? "bg-primary/5 border-b border-primary/20" : "border-b border-white/5 hover:bg-white/5 transition-colors";
+
+                tr.innerHTML = `
+                    <td class="p-3 font-medium ${r.isTarget ? 'text-primary' : 'text-white'}">
+                        ${r.name} ${r.isTarget ? '<span class="text-[10px] uppercase bg-primary/20 px-1 rounded ml-1">You</span>' : ''}
+                    </td>
+                    <td class="p-3 text-right text-gray-400">${r.mc ? r.mc.toLocaleString() : '--'}</td>
+                    <td class="p-3 text-right text-gray-300">${r.pe || '--'}</td>
+                    <td class="p-3 text-right font-bold text-white">${r.roe || '--'}%</td>
+                    <td class="p-3 text-right text-gray-300">${r.roce || '--'}%</td>
+                    <td class="p-3 text-right font-bold ${r.ret > 0 ? 'text-green-400' : 'text-red-400'}">${r.ret || '--'}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (e) { console.error("Error rendering Peer Table:", e); }
 
         // --- Investment Thesis ---
         try {

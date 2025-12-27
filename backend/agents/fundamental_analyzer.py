@@ -41,75 +41,149 @@ class FundamentalAnalyzer:
         # id_tables = self.table_extractor.identify_financial_tables(tables)
 
     def analyze(self, company_name: str) -> FundamentalMetrics:
-        print(f"\n[Fundamental Analyzer] Starting RAG extraction for {company_name}...")
-        # Retrieve Context
+        print(f"\n[Fundamental Analyzer] Starting Mixed Analysis for {company_name}...")
+        
+        # 1. Fetch Reliable CSV Data
+        # Import here to avoid circular dependency if any
+        from backend.utils.ticker_db import get_ticker_db
+        db = get_ticker_db()
+        csv_data = db.get_company_details(company_name) or {}
+        
+        print(f"[Fundamental Analyzer] CSV Data Found: {bool(csv_data)}")
+        
+        # 2. Retrieve Qualitative Context via RAG
         context = self.rag.query_context(
-            f"What are the revenue growth, profit margin, ROE, debt to equity, and key strengths/concerns for {company_name}?",
+            f"What is the management outlook, future growth plans, strategic direction, and key risks for {company_name}?",
             company_name
         )
         print(f"[Fundamental Analyzer] Retrieved {len(context)} characters of context.")
 
-        # Knowledge Fallback Logic
-        if not context or len(context) < 100:
-            print(f"[Fundamental Analyzer] ⚠️ RAG Context is empty/weak. Switching to GEMINI KNOWLEDGE FALLBACK.")
-            prompt = f"""
-            You are an expert financial analyst.
-            I do not have the specific documents for {company_name}. 
-            
-            Using your INTERNAL KNOWLEDGE (up to your last training cut-off), estimate the current financial health of {company_name}.
-            
-            CRITICAL: You MUST provide estimated numbers. Do NOT return 0 or null. Make educated conservative estimates based on public financial trends for this company.
-            
-            Extract/Estimate:
-            1. Revenue Growth (YoY %)
-            2. Profit Margin (%)
-            3. ROE (%)
-            4. Debt-to-Equity Ratio
-            
-            Return JSON object (no markdown):
-            {{
-                "revenue_growth": <float>,
-                "profit_margin": <float>,
-                "roe": <float>,
-                "debt_to_equity": <float>,
-                "health_score": <int, 0-10>,
-                "strengths": ["<strength1>", "<strength2>"],
-                "concerns": ["<concern1 - note this is estimated info>", "<concern2>"]
-            }}
-            """
-        else:
-            prompt = f"""
-            Analyze the fundamentals of {company_name} based on this context:
-            {context[:15000]} # Limit context window
-
-            Extract logical conservative estimates. 
-            CRITICAL: If a specific percentage is not found, ESTIMATE it based on the text or trends described. Do NOT return 0 unless the report explicitly says 0.
-            If absolutely no data is available, return null (which JSON parses as None) or -1, but try to find *something*.
-            
-            Return JSON object (no markdown):
-            {{
-                "revenue_growth": <float, percentage e.g. 15.5>,
-                "profit_margin": <float, percentage>,
-                "roe": <float, percentage>,
-                "debt_to_equity": <float>,
-                "health_score": <int, 0-10>,
-                "strengths": [<list of strings>],
-                "concerns": [<list of strings>]
-            }}
-            """
+        # 3. LLM Extraction for Qualitative Fields & Missing Quantitative
+        # We explicitly ask for the missing CSV metrics (Debt, Growth, Margin) here
+        prompt = f"""
+        You are a financial analyst. I have some quantitative data but I am missing key metrics.
+        
+        Context from Annual/Quarterly Report:
+        {context[:32000]} 
+        
+        Task:
+        1. IDENTIFY THE SECTOR (e.g., IT, Pharma, Banking, Oil & Gas).
+        2. SEARCH the text for "Financial Highlights" or "Consolidated Results" tables.
+        3. EXTRACT the following missing metrics. 
+           - **Raw Financials (Crucial)**: Extract the actual numbers for Current Year and Previous Year Revenue/Sales and Net Profit to calculate growth accurately.
+           - **Debt-to-Equity**: Look for "D/E ratio" or "Gearing".
+        
+        4. Qualitative extraction:
+           - "Management Outlook": Tone? Future guidance?
+           - "Future Plans": Capex, expansions?
+           - "Strengths" & "Concerns": Key risks/moats.
+           - "Health Score": 0-10.
+        
+        CRITICAL: 
+        - If a number is NOT found, return 0.0.
+        - Normalize numbers to CRORES if possible, or keep consistent units (e.g., both in Millions) so division works.
+        
+        Return JSON object (no markdown):
+        {{
+            "sector": "<string>",
+            "revenue_current": <float, latest year sales>,
+            "revenue_prior": <float, previous year sales>,
+            "profit_current": <float, latest year net profit>,
+            "profit_prior": <float, previous year net profit>,
+            "revenue_growth_pct": <float, optional valid % if found explicitly>,
+            "debt_to_equity": <float>,
+            "management_outlook": "<paragraph>",
+            "future_plans": "<paragraph>",
+            "strengths": ["<strength1>", "<strength2>"],
+            "concerns": ["<concern1>", "<concern2>"],
+            "health_score": <int, 0-10>
+        }}
+        """
+        
+        llm_data = {
+            "sector": "Unknown Sector",
+            "revenue_current": 0.0, "revenue_prior": 0.0,
+            "profit_current": 0.0, "profit_prior": 0.0,
+            "revenue_growth_pct": 0.0,
+            "debt_to_equity": 0.0,
+            "management_outlook": "Data not available in report.",
+            "future_plans": "Data not available in report.",
+            "strengths": [],
+            "concerns": [],
+            "health_score": 5
+        }
 
         try:
-            print("[Fundamental Analyzer] Asking Gemini to extract metrics...")
-            model_flash = genai.GenerativeModel('models/gemma-3-27b-it')
-            response = generate_content_with_retry(model_flash, prompt)
-            print(f"[Fundamental Analyzer] Gemini Response:\n{response.text}")
-            data = json.loads(response.text.replace("```json", "").replace("```", ""))
-            return FundamentalMetrics(**data)
+            if context and len(context) > 100:
+                print("[Fundamental Analyzer] Asking Gemini for qualitative insights + math inputs...")
+                model_flash = genai.GenerativeModel('models/gemma-3-27b-it')
+                response = generate_content_with_retry(model_flash, prompt)
+                extracted = json.loads(response.text.replace("```json", "").replace("```", ""))
+                llm_data.update(extracted)
+            else:
+                print("[Fundamental Analyzer] RAG Context empty. Using defaults.")
+                
         except Exception as e:
-            print(f"!!! [Fundamental Analyzer] ERROR: {e}")
-            logger.error(f"Fundamental Analysis failed: {e}")
-            # Fallback
-            return FundamentalMetrics(
-                revenue_growth=0, profit_margin=0, roe=0, debt_to_equity=0,
-                health_score=0, strengths=[f"Error: {str(e)}"], concerns=[]
-            )
+            logger.error(f"Qualitative analysis failed: {e}")
+            llm_data["strengths"].append(f"AI Extraction Error: {str(e)}")
+
+        # --- MATH VERIFICATION ---
+        # Calculate Growth if raw numbers exist
+        calc_rev_growth = 0.0
+        if llm_data['revenue_current'] > 0 and llm_data['revenue_prior'] > 0:
+            calc_rev_growth = ((llm_data['revenue_current'] - llm_data['revenue_prior']) / llm_data['revenue_prior']) * 100
+        elif llm_data['revenue_growth_pct'] != 0:
+             calc_rev_growth = llm_data['revenue_growth_pct']
+             
+        # Calculate Margin
+        calc_margin = 0.0
+        if llm_data['profit_current'] > 0 and llm_data['revenue_current'] > 0:
+            calc_margin = (llm_data['profit_current'] / llm_data['revenue_current']) * 100
+
+        # 4. Merge Data (CSV takes precedence for numbers, BUT fill gaps with LLM)
+        metrics = FundamentalMetrics(
+            # CSV Quantitative
+            market_cap=csv_data.get('Market Cap (Cr.)', 0.0),
+            pe_ratio=csv_data.get('PE Ratio', 0.0),
+            industry_pe=csv_data.get('Industry PE', 0.0),
+            roe=csv_data.get('ROE', 0.0),
+            roce=csv_data.get('ROCE', 0.0),
+            eps=csv_data.get('EPS', 0.0),
+            pb_ratio=csv_data.get('PB Ratio', 0.0),
+            dividend_yield=csv_data.get('Dividend', 0.0),
+            
+            # Fill voids with LLM data
+            debt_to_equity=float(llm_data.get('debt_to_equity', 0.0)),
+            sector=llm_data.get('sector', 'Unknown Sector'),
+            
+            # Returns
+            returns_1m=csv_data.get('1M Returns', 0.0),
+            returns_3m=csv_data.get('3M Returns', 0.0),
+            returns_1y=csv_data.get('1 Yr Returns', 0.0),
+            returns_3y=csv_data.get('3 Yr Returns', 0.0),
+            returns_5y=csv_data.get('5 Yr Returns', 0.0),
+            
+            # Technicals
+            fifty_dma=csv_data.get('50 DMA', 0.0),
+            two_hundred_dma=csv_data.get('200 DMA', 0.0),
+            rsi=csv_data.get('RSI', 0.0),
+            
+            # LLM Qualitative
+            health_score=llm_data.get('health_score', 5),
+            strengths=llm_data.get('strengths', []),
+            concerns=llm_data.get('concerns', []),
+            management_outlook=llm_data.get('management_outlook'),
+            future_plans=llm_data.get('future_plans'),
+            
+            # Computed Math
+            revenue_growth=round(calc_rev_growth, 2),
+            profit_margin=round(calc_margin, 2),
+            
+            # Hidden Raw
+            revenue_current=llm_data.get('revenue_current', 0.0),
+            revenue_prior=llm_data.get('revenue_prior', 0.0),
+            profit_current=llm_data.get('profit_current', 0.0),
+            profit_prior=llm_data.get('profit_prior', 0.0)
+        )
+        
+        return metrics

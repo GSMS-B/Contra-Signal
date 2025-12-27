@@ -20,10 +20,14 @@ class SignalGenerator:
         Peer Comparison: {peers.model_dump_json()}
 
         Rules:
-        - Strong Buy: Negative Sentiment + Strong Fundamentals + Leader Peers
-        - Buy: Mixed/Neg Sentiment + Good Fundamentals
-        - Avoid: Bad Fundamentals (regardless of news)
-        - Hold: Mixed signals
+        - Strong Buy: Negative Sentiment + Strong Fundamentals + Leader Peers + LOW Severity News (<5).
+        - Buy: Mixed/Neg Sentiment + Good Fundamentals + LOW/MED Severity News.
+        - Avoid: Bad Fundamentals OR HIGH Severity News (Fraud, Liquidation > 7).
+        - Hold: Mixed signals or High Valuation.
+
+        CRITICAL SEVERITY LOGIC:
+        - If News Severity Score > 7 (Fraud, Governance issues, Bankruptcy), you MUST NOT issue a Buy/Strong Buy. 
+        - High Severity overrides good fundamentals. Safety first!
 
         Return JSON object (no markdown):
         {{

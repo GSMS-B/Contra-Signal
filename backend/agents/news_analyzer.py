@@ -32,23 +32,41 @@ class NewsAnalyzer:
         for a in articles[:3]:
             print(f" - {a['title']}")
 
-        articles_text = "\n".join([f"- {a['title']} ({a['source']}): {a['description']}" for a in articles[:15]])
+        # Prepare all headlines for the UI (not just 15, but maybe limit to 20 for prompt token safety if needed, but return ALL to UI)
+        # Actually logic: We pass top 20 to LLM, but we can return ALL titles in the 'headlines' field for the UI list
+        all_headlines = [a['title'] for a in articles]
+        
+        articles_text = "\n".join([f"- {a['title']} ({a['source']}): {a['description']}" for a in articles[:25]])
         
         prompt = f"""
         Analyze the news sentiment for {company_name}.
         
+        CRITICAL FILTERING: 
+        - IGNORE news about "Sector", "Sensex", "Nifty", or other companies unless {company_name} is explicitly involved.
+        - Focus ONLY on {company_name}.
+        
         Articles:
         {articles_text}
         
-        Return a JSON object with this EXACT structure (no markdown):
+        Tasks:
+        1. Calculate Sentiment Score (-10 to 10).
+        2. RATE SEVERITY (0-10): How critical is this news to the company's survival/integrity?
+           - 10: Fraud, Raid, Liquidation, Bankruptcy, CEO Arrest. (KILL SWITCH)
+           - 7-9: Major Regulatory Fine, Factory Fire, Massive Strike.
+           - 4-6: Bad Earnings, Product Recall.
+           - 0-3: Routine news, market noise.
+        
+        Return JSON object (no markdown):
         {{
             "score": <int, -10 to 10>,
             "positive_count": <int>,
             "negative_count": <int>,
             "neutral_count": <int>,
             "key_themes": [<list of strings>],
-            "headlines": [<list of top 5 headlines as strings>],
-            "panic_level": "<low|medium|high>"
+            "headlines": {json.dumps(all_headlines[:5])},  # Just return top 5 for summary, but we will override this in Python with full list
+            "panic_level": "<low|medium|high>",
+            "severity_score": <int, 0-10>,
+            "severity_reason": "<short explanation>"
         }}
         """
 
@@ -69,6 +87,10 @@ class NewsAnalyzer:
                 text = text[7:-3]
             
             data = json.loads(text)
+            
+            # --- Override headlines with full list for UI ---
+            data['headlines'] = all_headlines
+            
             return NewsSentiment(**data)
         except Exception as e:
             print(f"!!! [News Analyzer] ERROR: {e}")

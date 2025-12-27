@@ -73,9 +73,26 @@ async def lifespan(app: FastAPI):
     try:
         db = get_ticker_db()
         # Adjust path relative to project root or use config
-        csv_path = os.path.join(os.path.dirname(__file__), "data", "stocks.csv")
-        logger.info(f"Loading stock data from: {csv_path}")
-        db.load_data(csv_path)
+        base_dir = os.path.dirname(__file__)
+        data_dir = os.path.join(base_dir, "data")
+        csv_path = os.path.join(data_dir, "stocks.csv")
+        
+        # DEBUG: Print directory contents to verify deployment structure
+        logger.info(f"Checking data directory: {data_dir}")
+        if os.path.exists(data_dir):
+            logger.info(f"Files in data dir: {os.listdir(data_dir)}")
+        else:
+            logger.error(f"Data directory NOT FOUND at {data_dir}")
+            
+        logger.info(f"Attempting to load stock data from: {csv_path}")
+        if os.path.exists(csv_path):
+            db.load_data(csv_path)
+            # Verify load
+            details = db.get_company_details("Reliance Industries") # Test check
+            logger.info(f"Sanity Check - Reliance Loaded: {bool(details)}")
+        else:
+            logger.error(f"CRITICAL: stocks.csv NOT FOUND at {csv_path}")
+
     except Exception as e:
         logger.error(f"Failed to load ticker database: {e}")
 
@@ -100,7 +117,9 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # --- Background Task ---
-def process_analysis(job_id: str, company_name: str, report_type: str, file_path: str):
+# --- Background Task ---
+from typing import List
+def process_analysis(job_id: str, company_name: str, report_type: str, file_path: str, manual_competitors: List[str] = []):
     try:
         job = jobs[job_id]
         job.status = "running"
@@ -142,7 +161,7 @@ def process_analysis(job_id: str, company_name: str, report_type: str, file_path
         job.current_step = "peers"
         logger.info(f"Job {job_id}: Starting Peer Comparison")
         peer_agent = get_agent('peer')
-        peer_result = peer_agent.analyze(company_name, fund_result)
+        peer_result = peer_agent.analyze(company_name, fund_result, manual_competitors)
         job.progress = 80
 
         if job.status == "cancelled": return
@@ -226,10 +245,12 @@ async def search_companies(q: str):
     return results
 
 @app.post("/api/analyze")
+@app.post("/api/analyze")
 async def start_analysis(
     background_tasks: BackgroundTasks,
     company_name: str = Form(...),
     report_type: str = Form(...),
+    manual_competitors_list: str = Form(None), # Comma separated list
     main_report: UploadFile = File(...)
 ):
     job_id = str(uuid.uuid4())
@@ -250,13 +271,19 @@ async def start_analysis(
         current_step="queued"
     )
 
+    # Parse competitors
+    competitors = []
+    if manual_competitors_list:
+        competitors = [c.strip() for c in manual_competitors_list.split(',') if c.strip()]
+
     # Start Task
     background_tasks.add_task(
         process_analysis, 
         job_id, 
         company_name, 
         report_type, 
-        file_path
+        file_path,
+        competitors # List passed to worker
     )
 
     return {"job_id": job_id}

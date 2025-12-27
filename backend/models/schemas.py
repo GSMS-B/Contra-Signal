@@ -20,15 +20,49 @@ class NewsSentiment(BaseModel):
     key_themes: List[str]
     headlines: List[str]
     panic_level: Literal["low", "medium", "high"]
+    severity_score: int = 0
+    severity_reason: str = ""
 
 class FundamentalMetrics(BaseModel):
-    revenue_growth: float
-    profit_margin: float
-    roe: float
-    debt_to_equity: float
+    # Quantitative (from CSV)
+    market_cap: float = 0.0
+    pe_ratio: float = 0.0
+    industry_pe: float = 0.0
+    roe: float = 0.0
+    roce: float = 0.0
+    eps: float = 0.0
+    pb_ratio: float = 0.0
+    dividend_yield: float = 0.0
+    debt_to_equity: float = 0.0 # Estimated if not in CSV
+    # Returns
+    returns_1m: float = 0.0
+    returns_3m: float = 0.0
+    returns_1y: float = 0.0
+    returns_3y: float = 0.0
+    returns_5y: float = 0.0
+    # Technicals
+    fifty_dma: float = 0.0
+    two_hundred_dma: float = 0.0
+    rsi: float = 0.0
+    
+    # Qualitative (from RAG/LLM)
     health_score: int = Field(..., ge=0, le=10)
     strengths: List[str]
     concerns: List[str]
+    management_outlook: Optional[str] = "Data not available"
+    future_plans: Optional[str] = "Data not available"
+    
+    # Legacy/Computed fallback
+    revenue_growth: float = 0.0
+    profit_margin: float = 0.0
+    
+    # Raw math fields (Hidden)
+    revenue_current: float = 0.0
+    revenue_prior: float = 0.0
+    profit_current: float = 0.0
+    profit_prior: float = 0.0
+    
+    sector: str = "Unknown Sector"
 
 class PeerComparison(BaseModel):
     competitive_position: Literal["leader", "average", "laggard"]
