@@ -1,3 +1,13 @@
+---
+title: Contra Signal
+emoji: 📉
+colorFrom: green
+colorTo: gray
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # 🎯 ContraSignal: AI-Powered Contrarian Investment Intelligence
 
 ---
@@ -120,4 +130,3 @@ While traditional tools analyze news OR fundamentals in isolation, ContraSignal 
 5.**Live Demo**
 
 Access the **Contra-Signal** app here: [https://gsms-b-contra-signal.hf.space/](https://gsms-b-contra-signal.hf.space/)
-
