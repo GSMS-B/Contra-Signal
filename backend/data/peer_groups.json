@@ -1,0 +1,8 @@
+{
+    "Adani": ["Reliance Industries", "Tata Power", "JSW Energy"],
+    "Reliance": ["Adani Enterprises", "TCS", "Infosys"],
+    "TCS": ["Infosys", "Wipro", "HCL Tech"],
+    "Infosys": ["TCS", "Wipro", "Tech Mahindra"],
+    "HDFC Bank": ["ICICI Bank", "SBI", "Axis Bank"],
+    "Tata Motors": ["Maruti Suzuki", "Mahindra & Mahindra"]
+}

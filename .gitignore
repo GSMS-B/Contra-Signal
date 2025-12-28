@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+
+
+# IDEs
+.vscode/
+.idea/
+
+# Application Specific
+*.pdf
+chroma_db/
+.env
+
+# User Data & Uploads
+uploads/*
+!uploads/.gitkeep

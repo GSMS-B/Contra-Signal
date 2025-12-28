@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Contrarian AI - Analysis in Progress</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#33f20d",
+                        "secondary-red": "#ff2a4d",
+                        "background-light": "#f6f8f5",
+                        "background-dark": "#050505",
+                        "surface-dark": "#0a0f1d",
+                        "glass": "rgba(10, 15, 29, 0.7)",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'data-scroll': 'data-scroll 20s linear infinite',
+                    },
+                    keyframes: {
+                        'pulse-glow': {
+                            '0%, 100%': { opacity: '1', filter: 'drop-shadow(0 0 5px #33f20d)' },
+                            '50%': { opacity: '.8', filter: 'drop-shadow(0 0 15px #33f20d)' },
+                        },
+                        'data-scroll': {
+                            '0%': { transform: 'translateX(0)' },
+                            '100%': { transform: 'translateX(-50%)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .cyber-grid {
+            background-image:
+                linear-gradient(rgba(51, 242, 13, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(51, 242, 13, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .radar-sweep {
+            background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(51, 242, 13, 0.4) 360deg);
+        }
+
+        /* Custom scrollbar for ticker */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-white overflow-x-hidden min-h-screen flex flex-col">
+    <!-- Top Navigation -->
+    <header
+        class="fixed top-0 w-full z-50 flex items-center justify-between border-b border-[#33f20d]/20 bg-surface-dark/90 backdrop-blur-md px-8 py-4">
+        <div class="flex items-center gap-3">
+            <div class="size-8 flex items-center justify-center rounded bg-[#33f20d]/10 border border-[#33f20d]">
+                <span class="material-symbols-outlined text-primary text-xl">radar</span>
+            </div>
+            <h2 class="text-white text-lg font-bold tracking-tight uppercase">Contra Signal <span
+                    class="text-primary/50 font-normal text-sm ml-2 font-mono">v2.4.1</span></h2>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="hidden md:flex items-center gap-2 font-mono text-xs text-gray-400">
+                <span class="material-symbols-outlined text-[16px] animate-pulse text-primary">wifi</span>
+                <span>DATA STREAM: LIVE</span>
+            </div>
+            <button
+                class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#33f20d]/10 border border-[#33f20d]/30 text-[#33f20d] text-xs font-mono font-bold">
+                <span class="size-2 rounded-full bg-primary animate-pulse"></span>
+                SYSTEM ACTIVE
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <!-- Adjusted padding to shift up but avoid header -->
+    <main class="relative flex-1 flex flex-col items-center justify-center w-full cyber-grid pt-28 pb-20">
+        <!-- Background Glow Effects -->
+        <div
+            class="absolute inset-0 bg-gradient-to-b from-transparent via-background-dark/80 to-background-dark pointer-events-none">
+        </div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none">
+        </div>
+
+        <!-- Central Layout Container -->
+        <div class="relative z-10 flex flex-col items-center w-full max-w-4xl px-6">
+
+            <!-- Central Loader Artifact -->
+            <div class="relative flex items-center justify-center size-64 mb-12">
+                <!-- Outer Static Ring -->
+                <div class="absolute inset-0 rounded-full border border-white/5"></div>
+                <!-- Middle Dashed Ring -->
+                <div class="absolute inset-2 rounded-full border border-dashed border-[#33f20d]/30 animate-spin-slow">
+                </div>
+                <!-- Inner Progress Ring SVG -->
+                <!-- stroke-dasharray="283" matches 2*pi*45 -->
+                <svg class="absolute inset-0 transform -rotate-90 size-64 drop-shadow-[0_0_10px_rgba(51,242,13,0.3)]"
+                    viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" fill="none" r="45" stroke="#1a2e15" stroke-width="2"></circle>
+                    <circle id="progress-circle" class="transition-all duration-500 ease-out" cx="50" cy="50"
+                        fill="none" r="45" stroke="#33f20d" stroke-dasharray="283" stroke-dashoffset="283"
+                        stroke-linecap="round" stroke-width="2"></circle>
+                </svg>
+                <!-- Radar Sweep Effect -->
+                <div class="absolute inset-4 rounded-full overflow-hidden opacity-20">
+                    <div class="absolute inset-0 radar-sweep animate-spin rounded-full"></div>
+                </div>
+                <!-- Center Data Display -->
+                <div class="absolute flex flex-col items-center justify-center text-center z-20">
+                    <span id="progress-percentage-text"
+                        class="text-5xl font-mono font-bold text-white tracking-tighter drop-shadow-lg">0%</span>
+                    <span class="text-xs text-[#33f20d] font-mono mt-1 animate-pulse"
+                        id="status-phase">INITIALIZING</span>
+                </div>
+            </div>
+
+            <!-- Status Text -->
+            <div class="flex flex-col items-center gap-2 mb-10 text-center">
+                <h1 id="status-headline"
+                    class="text-3xl md:text-4xl font-bold text-white tracking-tight animate-pulse-glow">
+                    Establishing Secure Link...
+                </h1>
+                <p id="status-detail" class="text-gray-400 font-mono text-sm max-w-lg">
+                    Preparing environment. Allocating neural resources.
+                </p>
+            </div>
+
+            <!-- Detailed Progress Bars -->
+            <div class="w-full max-w-xl grid gap-4" id="steps-container">
+                <!-- Step 1: Ingestion -->
+                <div class="flex items-center gap-4 step-row" id="step-news">
+                    <div
+                        class="step-icon size-6 flex items-center justify-center rounded-full border border-white/20 text-gray-500">
+                        <span class="material-symbols-outlined text-sm icon-content">lock_clock</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-xs font-mono text-gray-500 step-label">DATA_INGESTION (NEWS)</span>
+                            <span class="text-xs font-mono text-gray-500 step-status">PENDING</span>
+                        </div>
+                        <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div
+                                class="progress-bar h-full bg-[#33f20d] w-0 shadow-[0_0_10px_#33f20d] transition-all duration-500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Fundamentals -->
+                <div class="flex items-center gap-4 step-row" id="step-fundamentals">
+                    <div
+                        class="step-icon size-6 flex items-center justify-center rounded-full border border-white/20 text-gray-500">
+                        <span class="material-symbols-outlined text-sm icon-content">lock_clock</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-xs font-mono text-gray-500 step-label">FUNDAMENTALS (RAG)</span>
+                            <span class="text-xs font-mono text-gray-500 step-status">PENDING</span>
+                        </div>
+                        <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div
+                                class="progress-bar h-full bg-[#33f20d] w-0 shadow-[0_0_10px_#33f20d] transition-all duration-500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Peer/Signal -->
+                <div class="flex items-center gap-4 step-row" id="step-signal">
+                    <div
+                        class="step-icon size-6 flex items-center justify-center rounded-full border border-white/20 text-gray-500">
+                        <span class="material-symbols-outlined text-sm icon-content">lock_clock</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-xs font-mono text-gray-500 step-label">SIGNAL_GENERATION</span>
+                            <span class="text-xs font-mono text-gray-500 step-status">PENDING</span>
+                        </div>
+                        <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div
+                                class="progress-bar h-full bg-[#33f20d] w-0 shadow-[0_0_10px_#33f20d] transition-all duration-500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancel Button -->
+            <a href="/"
+                class="mt-12 px-8 py-2.5 rounded-full border border-red-900/50 hover:border-red-500/80 hover:bg-red-500/10 text-red-400 text-sm font-medium transition-colors flex items-center gap-2 group">
+                <span class="material-symbols-outlined text-lg group-hover:rotate-90 transition-transform">close</span>
+                ABORT ANALYSIS
+            </a>
+        </div>
+
+        <!-- Bottom Right Stats - Fixed Position for visibility -->
+        <div
+            class="hidden lg:block fixed bottom-8 right-8 w-64 p-4 rounded-xl border border-white/5 bg-surface-dark/90 backdrop-blur-md z-50">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-[10px] text-gray-500 uppercase font-mono">Tokens Processed</p>
+                    <p id="token-counter" class="text-lg font-mono text-white">0</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-500 uppercase font-mono">Time Taken</p>
+                    <p id="time-elapsed" class="text-lg font-mono text-[#33f20d]">0s</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Ticker Removed -->
+
+
+    <script src="/static/js/progress.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Analysis Input Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;family=JetBrains+Mono:wght@400;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#33f20d",
+                        "background-light": "#f6f8f5",
+                        "background-dark": "#050505", // Deep void black per request
+                        "surface-dark": "#0a100d",
+                        "accent-blue": "#0d1b2a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(51, 242, 13, 0.5), 0 0 20px rgba(51, 242, 13, 0.3)',
+                        'neon-hover': '0 0 15px rgba(51, 242, 13, 0.7), 0 0 30px rgba(51, 242, 13, 0.5)',
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+
+        .glass-panel {
+            background: rgba(13, 27, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .pulse-slow {
+            animation: pulse-glow 3s infinite;
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 5px rgba(51, 242, 13, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(51, 242, 13, 0.5);
+            }
+        }
+
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, #1f2937 1px, transparent 1px),
+                linear-gradient(to bottom, #1f2937 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+        }
+    </style>
+</head>
+
+<body class="bg-background-dark text-white font-display min-h-screen flex flex-col relative overflow-x-hidden">
+    <!-- Ambient Background Effects -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <!-- Deep radial gradient for void effect -->
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_#111827_0%,_#050505_100%)]"></div>
+        <!-- Grid overlay -->
+        <div class="absolute inset-0 opacity-[0.07] bg-grid-pattern"></div>
+        <!-- Moving glow blobs -->
+        <div class="absolute top-[-10%] left-[20%] w-96 h-96 bg-primary/5 rounded-full blur-[128px]"></div>
+        <div class="absolute bottom-[-10%] right-[20%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[128px]">
+        </div>
+    </div>
+    <!-- Top Navigation -->
+    <header
+        class="relative z-20 flex items-center justify-between px-8 py-5 border-b border-white/5 bg-background-dark/50 backdrop-blur-sm">
+        <div class="flex items-center gap-4 text-white">
+            <div class="size-8 text-primary animate-pulse">
+                <span class="material-symbols-outlined text-3xl">ssid_chart</span>
+            </div>
+            <div>
+                <a href="/" class="hover:text-primary transition-colors">
+                    <h2 class="text-white text-lg font-bold leading-tight tracking-wider uppercase">Signal / Noise</h2>
+                </a>
+                <div class="text-[10px] text-primary/70 font-mono tracking-widest">VER 2.4.0 // CONNECTED</div>
+            </div>
+        </div>
+        <!-- Right side icons removed per user request -->
+    </header>
+    <!-- Main Content Area -->
+    <main class="relative z-10 flex-grow flex items-center justify-center p-4 md:p-8">
+        <!-- Central Glass Card -->
+        <div
+            class="glass-panel w-full max-w-3xl rounded-[2rem] p-1 overflow-hidden animate-in fade-in zoom-in duration-500">
+            <div class="bg-black/20 rounded-[1.8rem] p-6 md:p-12 border border-white/5 relative">
+                <!-- Decorative scan line -->
+                <div
+                    class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50">
+                </div>
+                <!-- Header Section -->
+                <div class="mb-10 text-center md:text-left">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
+                        <span class="material-symbols-outlined text-primary text-sm">auto_awesome</span>
+                        <span class="text-primary text-xs font-bold tracking-wider uppercase">AI Contrarian Scan</span>
+                    </div>
+                    <h1 class="text-3xl md:text-5xl font-black tracking-tighter text-white mb-3">
+                        New Signal Analysis
+                    </h1>
+                    <p class="text-gray-400 text-lg font-light max-w-xl">
+                        Detect hidden signals in the noise. Enter a company to initiate deep learning contrarian scan.
+                    </p>
+                </div>
+
+                <form id="analysisForm">
+                    <!-- Form Grid -->
+                    <div class="grid grid-cols-1 gap-8">
+                        <!-- Ticker Input with Floating Label Effect -->
+                        <div class="relative group">
+                            <input
+                                class="block py-4 px-0 w-full text-4xl md:text-5xl font-mono text-white bg-transparent border-0 border-b-2 border-gray-700 appearance-none focus:outline-none focus:ring-0 focus:border-primary peer transition-colors placeholder-transparent tracking-wider"
+                                id="ticker" name="company_name" placeholder=" " type="text" autocomplete="off"
+                                required />
+                            <label
+                                class="peer-focus:font-medium absolute text-lg md:text-xl text-gray-500 duration-300 transform -translate-y-8 scale-75 top-4 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-8"
+                                for="ticker">
+                                ENTER TARGET COMPANY
+                            </label>
+                            <div id="companyReadyIndicator"
+                                class="absolute right-0 bottom-4 opacity-0 transition-opacity flex items-center gap-2 text-primary font-mono text-sm pointer-events-none">
+                                <span class="material-symbols-outlined text-lg">check_circle</span>
+                                <span>READY</span>
+                            </div>
+                            <!-- Autocomplete Suggestions -->
+                            <ul id="ticker-suggestions"
+                                class="absolute z-50 w-full mt-2 bg-surface-dark/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] hidden max-h-60 overflow-y-auto overflow-x-hidden divide-y divide-white/5 no-scrollbar">
+                                <!-- Items injected by JS -->
+                            </ul>
+                        </div>
+
+                        <!-- Optional Competitor Input (Multiple) -->
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <button type="button" id="addCompetitorBtn"
+                                    class="px-4 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-mono text-gray-400 hover:text-primary transition-all flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-base">add_circle</span>
+                                    Add Competitor (Optional)
+                                </button>
+                                <span class="text-xs text-gray-600 font-mono hidden md:block">MAX 5 COMPETITORS</span>
+                            </div>
+
+                            <!-- Container for dynamic inputs -->
+                            <div id="competitorsList" class="flex flex-col gap-4">
+                                <!-- Dynamic rows will be added here -->
+                            </div>
+                            <!-- Hidden input to store comma-separated list for backend -->
+                            <input type="hidden" name="manual_competitors_list" id="manualCompetitorsJson">
+                        </div>
+
+                        <!-- Configuration Section -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+                            <!-- Data Source Selector -->
+                            <div class="space-y-3">
+                                <h3
+                                    class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">database</span>
+                                    Report Type
+                                </h3>
+                                <div class="flex p-1 bg-black/40 rounded-full border border-white/10">
+                                    <label class="cursor-pointer flex-1">
+                                        <input checked="" class="peer sr-only" name="report_type" value="annual"
+                                            type="radio" />
+                                        <div
+                                            class="rounded-full py-2.5 px-4 text-center text-sm font-medium text-gray-400 transition-all peer-checked:bg-primary peer-checked:text-black peer-checked:shadow-[0_0_15px_rgba(51,242,13,0.4)] peer-checked:font-bold">
+                                            Annual Report
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer flex-1">
+                                        <input class="peer sr-only" name="report_type" value="quarterly" type="radio" />
+                                        <div
+                                            class="rounded-full py-2.5 px-4 text-center text-sm font-medium text-gray-400 transition-all peer-checked:bg-primary peer-checked:text-black peer-checked:shadow-[0_0_15px_rgba(51,242,13,0.4)] peer-checked:font-bold">
+                                            Quarterly Report
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Holographic Drop Zone -->
+                        <div class="mt-4">
+                            <label id="mainDropZone"
+                                class="group flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-700 rounded-2xl cursor-pointer bg-black/20 hover:bg-black/40 hover:border-primary/60 hover:shadow-[inset_0_0_20px_rgba(51,242,13,0.05)] transition-all duration-300">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center">
+                                    <div
+                                        class="mb-3 p-3 rounded-full bg-white/5 group-hover:bg-primary/10 group-hover:text-primary transition-colors text-gray-400">
+                                        <span class="material-symbols-outlined text-3xl">picture_as_pdf</span>
+                                    </div>
+                                    <p class="mb-1 text-sm text-gray-300"><span class="font-semibold text-primary">Click
+                                            to
+                                            upload</span> or drag and drop reports</p>
+                                    <p class="text-xs text-gray-500 font-mono group-hover:text-primary/70">PDF ONLY
+                                        (MAX.
+                                        50MB)</p>
+                                    <div id="fileInfo" class="mt-2 text-primary font-bold hidden"></div>
+                                </div>
+                                <input class="hidden" type="file" id="mainReport" name="main_report" accept=".pdf" />
+                            </label>
+                        </div>
+
+                        <!-- Action Footer -->
+                        <div
+                            class="flex flex-col md:flex-row items-center justify-between gap-6 mt-6 pt-6 border-t border-white/10">
+                            <div class="flex items-center gap-2 text-xs font-mono text-gray-500">
+                                <span class="material-symbols-outlined text-base">encrypted</span>
+                                <span>END-TO-END ENCRYPTED</span>
+                            </div>
+                            <button type="submit" id="submitBtn"
+                                class="relative w-full md:w-auto group overflow-hidden rounded-full bg-primary py-4 px-12 text-black font-bold uppercase tracking-wider transition-all hover:shadow-neon hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="relative z-10 flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined">bolt</span>
+                                    Initiate Sequence
+                                </span>
+                                <div
+                                    class="absolute inset-0 z-0 h-full w-full bg-white/30 opacity-0 transition-opacity group-hover:opacity-20">
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!-- Bottom progress bar visual -->
+            <div class="h-1 w-full bg-gray-800 mt-1">
+                <div class="h-full bg-primary w-1/3 shadow-[0_0_10px_rgba(51,242,13,0.8)]"></div>
+            </div>
+        </div>
+    </main>
+    <!-- Decorative floating data elements -->
+    <div
+        class="fixed bottom-8 left-8 hidden lg:block font-mono text-[10px] text-primary/40 pointer-events-none select-none">
+        <div class="flex flex-col gap-1">
+            <div class="opacity-30">SYS_CHECK_OK</div>
+            <div class="opacity-50">LATENCY: 12ms</div>
+            <div class="opacity-70">NODES_ACTIVE: 4,021</div>
+            <div class="opacity-90 animate-pulse">Waiting for input...</div>
+        </div>
+    </div>
+
+    <script src="/static/js/analyze.js"></script>
+</body>
+
+</html>
