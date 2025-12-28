@@ -172,19 +172,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (e) { console.error("Error rendering News:", e); }
 
-        // --- Peer Comparison (Radar SVG) ---
+        // --- Peer Comparison (Radar SVG - 6 Axes) ---
         try {
-            // Draw a polygon based on the 5 metrics: 
-            // 1. Growth, 2. Margin, 3. ROE, 4. Debt (inverted), 5. Strength
+            // Axes: Growth(0), Profitability(60), Efficiency(120), Valuation(180), Dividend(240), Momentum(300)
+            const scores = fundamentals.normalized_scores || {
+                "Growth": 50, "Profitability": 50, "Efficiency": 50, "Valuation": 50, "Dividend Yield": 0, "Momentum": 50
+            };
 
             // Normalize values 0-100 for the chart radius (max 80px)
-            const p1 = Math.min(Math.max(fundamentals.revenue_growth * 2, 20), 100); // Growth
-            const p2 = Math.min(Math.max(fundamentals.profit_margin * 2, 20), 100); // Margin
-            const p3 = Math.min(Math.max(fundamentals.roe * 2, 20), 100); // ROE
-            const p4 = 100 - Math.min(Math.max(parseFloat(fundamentals.debt_to_equity) * 20, 0), 100); // Low Debt = High Score
-            const p5 = fundamentals.health_score * 10; // Strength
+            const p1 = Math.min(Math.max(scores["Growth"] || 0, 10), 100);
+            const p2 = Math.min(Math.max(scores["Profitability"] || 0, 10), 100);
+            const p3 = Math.min(Math.max(scores["Efficiency"] || 0, 10), 100);
+            const p4 = Math.min(Math.max(scores["Valuation"] || 0, 10), 100);
+            const p5 = Math.min(Math.max(scores["Dividend Yield"] || 0, 10), 100);
+            const p6 = Math.min(Math.max(scores["Momentum"] || 0, 10), 100);
 
-            // Angles: 0(Top), 72, 144, 216, 288
+            // Angles: 0, 60, 120, 180, 240, 300
             // Center (100, 100), Max Radius 80.
             function getPoint(val, angleDeg) {
                 const angleRad = (angleDeg - 90) * Math.PI / 180;
@@ -196,10 +199,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const points = [
                 getPoint(p1, 0),
-                getPoint(p2, 72),
-                getPoint(p3, 144),
-                getPoint(p4, 216),
-                getPoint(p5, 288)
+                getPoint(p2, 60),
+                getPoint(p3, 120),
+                getPoint(p4, 180),
+                getPoint(p5, 240),
+                getPoint(p6, 300)
             ].join(' ');
 
             const poly = document.getElementById('peerRadarPolygon');
@@ -210,37 +214,53 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (e) { console.error("Error rendering Peer Radar:", e); }
 
 
-
         // --- NEW: Detailed Metrics Grid ---
         try {
-            const f = fundamentals;
-            const setTxt = (id, val, suffix = '') => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = val !== undefined && val !== null ? val + suffix : '--';
-            };
-            const setCol = (id, val) => {
-                const el = document.getElementById(id);
-                if (el && typeof val === 'number') {
-                    if (val > 0) el.className = "font-mono font-bold text-lg text-primary";
-                    else if (val < 0) el.className = "font-mono font-bold text-lg text-danger";
-                    else el.className = "font-mono font-bold text-lg text-white";
-                }
-            };
+            const grid = document.getElementById('metricsGrid');
+            if (grid) {
+                grid.innerHTML = ''; // Clear loading state
 
-            setTxt('d_marketCap', f.market_cap ? f.market_cap.toLocaleString() : '--', ' Cr');
-            setTxt('d_pe', f.pe_ratio);
-            setTxt('d_indPe', f.industry_pe);
-            setTxt('d_pb', f.pb_ratio);
-            setTxt('d_div', f.dividend_yield, '%');
-            setTxt('d_eps', f.eps);
-            setTxt('d_roe', f.roe, '%');
-            setTxt('d_roce', f.roce, '%');
+                const createCard = (title, value, sub = '') => {
+                    const card = document.createElement('div');
+                    card.className = "metric-card";
 
-            setTxt('d_ret1y', f.returns_1y, '%'); setCol('d_ret1y', f.returns_1y);
-            setTxt('d_ret3y', f.returns_3y, '%'); setCol('d_ret3y', f.returns_3y);
-            setTxt('d_ret5y', f.returns_5y, '%'); setCol('d_ret5y', f.returns_5y);
+                    let valColor = "text-white";
+                    if (title.includes('Return') || title.includes('Growth')) {
+                        const num = parseFloat(value);
+                        if (num > 0) valColor = "text-primary";
+                        else if (num < 0) valColor = "text-danger";
+                    }
 
+                    card.innerHTML = `
+                        <span class="metric-title">${title}</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="metric-value ${valColor}">${value !== undefined && value !== null ? value : '--'}</span>
+                            <span class="metric-sub">${sub}</span>
+                        </div>
+                    `;
+                    return card;
+                };
 
+                const f = fundamentals;
+
+                // Row 1: Valuation
+                grid.appendChild(createCard("Market Cap", f.market_cap ? f.market_cap.toLocaleString() : '--', " Cr"));
+                grid.appendChild(createCard("P/E Ratio", f.pe_ratio));
+                grid.appendChild(createCard("Ind. P/E", f.industry_pe));
+                grid.appendChild(createCard("P/B Ratio", f.pb_ratio));
+
+                // Row 2: Profitability
+                grid.appendChild(createCard("Div. Yield", f.dividend_yield, "%"));
+                grid.appendChild(createCard("EPS", f.eps));
+                grid.appendChild(createCard("ROE", f.roe, "%"));
+                grid.appendChild(createCard("ROCE", f.roce, "%"));
+
+                // Row 3: Returns
+                grid.appendChild(createCard("1Y Return", f.returns_1y, "%"));
+                grid.appendChild(createCard("3Y Return", f.returns_3y, "%"));
+                grid.appendChild(createCard("5Y Return", f.returns_5y, "%"));
+                // Debt/Eq removed per user request
+            }
 
         } catch (e) { console.error("Error rendering Detailed Metrics:", e); }
 
@@ -250,9 +270,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             tbody.innerHTML = '';
 
             const peerMap = peers.peer_metrics || {};
-            // Add Target Company first for comparison? Or just peers. Let's add peers.
-            // Be nice to show Target vs Peers. 
-            // Let's add Target as the first row highlighted
             const rows = [];
 
             // Target Row
@@ -263,6 +280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 roe: fundamentals.roe,
                 roce: fundamentals.roce,
                 ret: fundamentals.returns_1y,
+                dy: fundamentals.dividend_yield,
                 isTarget: true
             });
 
@@ -275,6 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     roe: pM.roe,
                     roce: pM.roce,
                     ret: pM.returns_1y,
+                    dy: pM.dividend_yield,
                     isTarget: false
                 });
             }

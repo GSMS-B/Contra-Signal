@@ -50,6 +50,42 @@
             color: #ffffff;
         }
 
+        .metric-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .metric-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(51, 242, 13, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .metric-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .metric-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
         .bento-card {
             background: linear-gradient(145deg, #0a0f1c 0%, #0d1221 100%);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -237,7 +273,7 @@
                                     class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-900 to-primary w-[0%] transition-all duration-1000 group-hover:brightness-110">
                                 </div>
                                 <span id="newsPosText"
-                                    class="absolute top-1/2 left-4 -translate-y-1/2 text-xs font-bold text-black z-10 mix-blend-screen">0%</span>
+                                    class="absolute top-1/2 left-4 -translate-y-1/2 text-xs font-bold text-white z-10 mix-blend-screen">0%</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-4">
@@ -311,9 +347,7 @@
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full bg-primary shadow-glow-sm"></div> TARGET
                             </div>
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-2 h-2 rounded-full bg-gray-600"></div> AVG
-                            </div>
+                            <!-- Removed AVG logic for now as we focus on raw peers but chart still compares? -->
                         </div>
                     </div>
                     <div class="flex-1 flex items-center justify-center relative z-10">
@@ -325,24 +359,26 @@
                                 <circle cx="100" cy="100" r="40"></circle>
                                 <circle cx="100" cy="100" r="60"></circle>
                                 <circle cx="100" cy="100" r="80"></circle>
-                                <!-- Axis Lines -->
-                                <line x1="100" x2="100" y1="100" y2="10"></line>
-                                <line x1="100" x2="185" y1="100" y2="38"></line>
-                                <line x1="100" x2="158" y1="100" y2="180"></line>
-                                <line x1="100" x2="42" y1="100" y2="180"></line>
-                                <line x1="100" x2="15" y1="100" y2="38"></line>
+                                <!-- Axis Lines (6 Axis) -->
+                                <line x1="100" y1="100" x2="100" y2="10"></line> <!-- 0 deg (Top) -->
+                                <line x1="100" y1="100" x2="178" y2="55"></line> <!-- 60 deg -->
+                                <line x1="100" y1="100" x2="178" y2="145"></line> <!-- 120 deg -->
+                                <line x1="100" y1="100" x2="100" y2="190"></line> <!-- 180 deg -->
+                                <line x1="100" y1="100" x2="22" y2="145"></line> <!-- 240 deg -->
+                                <line x1="100" y1="100" x2="22" y2="55"></line> <!-- 300 deg -->
                             </g>
                             <!-- Labels -->
                             <g class="text-[8px] fill-gray-400 font-mono" text-anchor="middle">
                                 <text x="100" y="8">GROWTH</text>
-                                <text x="190" y="40">MARGIN</text>
-                                <text x="160" y="195">ROE</text>
-                                <text x="40" y="195">DEBT</text>
-                                <text x="10" y="40">STRENGTH</text>
+                                <text x="190" y="55">PROFIT</text>
+                                <text x="190" y="150">EFFICIENCY</text>
+                                <text x="100" y="198">VALUATION</text>
+                                <text x="10" y="150">DIVIDEND</text>
+                                <text x="10" y="55">MOMENTUM</text>
                             </g>
                             <!-- Data Polygon: Target (Green) -->
                             <polygon id="peerRadarPolygon" class="drop-shadow-[0_0_8px_rgba(51,242,13,0.4)]"
-                                fill="rgba(51, 242, 13, 0.15)" points="100,100 100,100 100,100 100,100 100,100"
+                                fill="rgba(51, 242, 13, 0.15)" points="100,100 100,100 100,100 100,100 100,100 100,100"
                                 stroke="#33f20d" stroke-width="2"></polygon>
                         </svg>
                     </div>
@@ -378,58 +414,9 @@
                     <h3 class="text-xl font-bold text-white">Fundamental Strength</h3>
                 </div>
                 <!-- Adjusted grid cols for layout -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm h-full content-center">
-
-                    <!-- Line 1 -->
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">Market Cap</p>
-                        <p class="font-mono font-bold text-lg text-white" id="d_marketCap">--</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">P/E Ratio</p>
-                        <p class="font-mono font-bold text-lg text-primary" id="d_pe">--</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">Ind. P/E</p>
-                        <p class="font-mono font-bold text-lg text-gray-300" id="d_indPe">--</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">P/B Ratio</p>
-                        <p class="font-mono font-bold text-lg text-white" id="d_pb">--</p>
-                    </div>
-
-                    <!-- Line 2 -->
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">Dividend Yield</p>
-                        <p class="font-mono font-bold text-lg text-white" id="d_div">--</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">EPS</p>
-                        <p class="font-mono font-bold text-lg text-white" id="d_eps">--</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">ROE</p>
-                        <p class="font-mono font-bold text-lg text-white" id="d_roe">--</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">ROCE</p>
-                        <p class="font-mono font-bold text-lg text-white" id="d_roce">--</p>
-                    </div>
-
-                    <!-- Line 3 Returns -->
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">1Y Return</p>
-                        <p class="font-mono font-bold text-lg" id="d_ret1y">--</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">3Y Return</p>
-                        <p class="font-mono font-bold text-lg" id="d_ret3y">--</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-gray-500 text-xs uppercase tracking-wider">5Y Return</p>
-                        <p class="font-mono font-bold text-lg" id="d_ret5y">--</p>
-                    </div>
-
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm h-full content-center" id="metricsGrid">
+                    <!-- Cards will be injected by JS displayDetailedMetrics() -->
+                    <div class="col-span-full text-center text-gray-500 animate-pulse">Loading detailed metrics...</div>
                 </div>
             </div>
 

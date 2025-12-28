@@ -56,6 +56,9 @@ class FundamentalMetrics(BaseModel):
     revenue_growth: float = 0.0
     profit_margin: float = 0.0
     
+    # Normalized Scores for Radar Chart (Growth, Profitability, Efficiency, Valuation, Dividend, Momentum)
+    normalized_scores: Optional[Dict[str, float]] = None
+
     # Raw math fields (Hidden)
     revenue_current: float = 0.0
     revenue_prior: float = 0.0

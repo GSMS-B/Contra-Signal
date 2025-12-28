@@ -5,6 +5,7 @@ import logging
 from backend.config import GEMINI_API_KEY
 from backend.models.schemas import PeerComparison, FundamentalMetrics
 from backend.utils.ai_helper import generate_content_with_retry
+from backend.utils.peer_comparison import calculate_normalized_scores_v2
 
 logger = logging.getLogger(__name__)
 genai.configure(api_key=GEMINI_API_KEY)
@@ -19,6 +20,25 @@ class PeerComparator:
         from backend.utils.ticker_db import get_ticker_db
         db = get_ticker_db()
         
+        # --- 0. Calculate Scores for TARGET Company ---
+        # We need to construct a raw dict for the utility
+        try:
+            target_raw = {
+                'roe': target_metrics.roe,
+                'roce': target_metrics.roce,
+                'pe_ratio': target_metrics.pe_ratio,
+                'industry_pe': target_metrics.industry_pe,
+                'dividend_yield': target_metrics.dividend_yield, # If already calculated
+                'returns_5y': target_metrics.returns_5y,
+                'returns_1y': target_metrics.returns_1y,
+                # 'current_price' might not be in target_metrics, but maybe we don't need it if div yield is there
+                'current_price': 0.0 # Placeholder
+            }
+            target_metrics.normalized_scores = calculate_normalized_scores_v2(target_raw)
+            print(f"[Peer Comparator] Calculated Target Scores: {target_metrics.normalized_scores}")
+        except Exception as e:
+            print(f"Error calculating target scores: {e}")
+
         peer_data_list = []
         peer_names = []
         
@@ -64,25 +84,46 @@ class PeerComparator:
             p_name = p_data.get('Name')
             peer_names.append(p_name)
             
+            # Helper to safely get float
+            def sf(k): return float(p_data.get(k, 0.0) or 0.0)
+
             # Convert CSV dict to FundamentalMetrics object
             # Note: We only fill quantitative, qualitative will be defaults
             p_metrics = FundamentalMetrics(
-                market_cap=p_data.get('Market Cap (Cr.)', 0.0),
-                pe_ratio=p_data.get('PE Ratio', 0.0),
-                industry_pe=p_data.get('Industry PE', 0.0),
-                roe=p_data.get('ROE', 0.0),
-                roce=p_data.get('ROCE', 0.0),
-                eps=p_data.get('EPS', 0.0),
-                pb_ratio=p_data.get('PB Ratio', 0.0),
-                dividend_yield=p_data.get('Dividend', 0.0),
+                market_cap=sf('Market Cap (Cr.)'),
+                pe_ratio=sf('PE Ratio'),
+                industry_pe=sf('Industry PE'),
+                roe=sf('ROE'),
+                roce=sf('ROCE'),
+                eps=sf('EPS'),
+                pb_ratio=sf('PB Ratio'),
+                dividend_yield=sf('Dividend'), # CSV often has Dividend (Rs) or Yield? Assuming Yield or use logic
                 
-                returns_1y=p_data.get('1 Yr Returns', 0.0),
-                # Add other returns if needed for comparison view
+                returns_1y=sf('1 Yr Returns'),
+                returns_5y=sf('5 Yr Returns'),
                 
                 health_score=5, # Default since we don't analyze peers deeply
                 strengths=[],
                 concerns=[]
             )
+            
+            # Calculate Normalized Scores for Peer
+            try:
+                # Map CSV keys to expected format for calc
+                peer_raw = {
+                    'roe': sf('ROE'),
+                    'roce': sf('ROCE'),
+                    'pe_ratio': sf('PE Ratio'),
+                    'industry_pe': sf('Industry PE'),
+                    'dividend': sf('Dividend'),
+                    'current_price': sf('LTP'),
+                    'returns_1y': sf('1 Yr Returns'),
+                    'returns_5y': sf('5 Yr Returns')
+                }
+                p_metrics.normalized_scores = calculate_normalized_scores_v2(peer_raw)
+            except Exception as e:
+                print(f"Error calculating scores for {p_name}: {e}")
+            
             peer_metrics_map[p_name] = p_metrics
 
         print(f"[Peer Comparator] Found peers: {peer_names}")
