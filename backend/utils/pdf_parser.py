@@ -12,13 +12,13 @@ class PDFParser:
             raise FileNotFoundError(f"PDF not found: {pdf_path}")
 
     def extract_text(self) -> str:
-        """Extracts full text from PDF using pypdf (faster)."""
-        import pypdf
+        """Extracts full text from PDF using PyMuPDF (extremely fast)."""
+        import fitz  # PyMuPDF
         full_text = []
         try:
-            reader = pypdf.PdfReader(self.pdf_path)
-            for i, page in enumerate(reader.pages):
-                text = page.extract_text()
+            doc = fitz.open(self.pdf_path)
+            for i, page in enumerate(doc):
+                text = page.get_text()
                 if text:
                     full_text.append(f"--- Page {i+1} ---\n{text}")
             return "\n\n".join(full_text)

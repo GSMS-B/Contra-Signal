@@ -4,16 +4,17 @@ python-multipart
 jinja2
 python-dotenv
 pdfplumber
-PyPDF2
+PyMuPDF==1.24.1
 tabula-py
 pandas
-google-generativeai
-anthropic
+groq
 openai
+huggingface_hub
 chromadb
 sentence-transformers
 langchain
 langchain-community
+langchain-text-splitters
 requests
 httpx
 aiohttp
@@ -22,6 +23,4 @@ beautifulsoup4
 pydantic
 python-dateutil
 feedparser
-langchain-text-splitters
 gunicorn
-pypdf

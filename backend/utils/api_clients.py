@@ -11,15 +11,16 @@ class NewsAPIClient:
         self.api_key = api_key
         self.base_url = "https://newsapi.org/v2/everything"
 
-    def fetch_news(self, company_name: str, days: int = 7) -> List[Dict]:
+    def fetch_news(self, company_name: str, query_string: str = None, days: int = 7) -> List[Dict]:
         """
         Fetches news for the given company from the last `days`.
         """
+        search_q = query_string if query_string else f'"{company_name}"'
         try:
             response = requests.get(
                 self.base_url,
                 params={
-                    'q': f'"{company_name}"',
+                    'q': search_q,
                     'apiKey': self.api_key,
                     'language': 'en',
                     'sortBy': 'publishedAt', # Ensure latest news comes first
@@ -52,6 +53,6 @@ class NewsAggregator:
     def __init__(self):
         self.client = NewsAPIClient(api_key=NEWS_API_KEY)
 
-    def fetch_news(self, company_name: str) -> List[Dict]:
+    def fetch_news(self, company_name: str, query_string: str = None) -> List[Dict]:
         # In a full production app, this would try multiple clients
-        return self.client.fetch_news(company_name)
+        return self.client.fetch_news(company_name, query_string=query_string)

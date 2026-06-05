@@ -1,12 +1,9 @@
-import google.generativeai as genai
 import json
 import logging
-from backend.config import GEMINI_API_KEY
 from backend.models.schemas import ContrarianSignal, NewsSentiment, FundamentalMetrics, PeerComparison
-from backend.utils.ai_helper import generate_content_with_retry
+from backend.utils.ai_helper import generate_content_with_fallback
 
 logger = logging.getLogger(__name__)
-genai.configure(api_key=GEMINI_API_KEY)
 
 class SignalGenerator:
     def generate_signal(self, news: NewsSentiment, fundamentals: FundamentalMetrics, peers: PeerComparison) -> ContrarianSignal:
@@ -46,11 +43,10 @@ class SignalGenerator:
         """
 
         try:
-            print(f"\n[Signal Generator] Synthesizing final signal...")
-            model_flash = genai.GenerativeModel('models/gemma-3-27b-it')
-            response = generate_content_with_retry(model_flash, prompt)
-            print(f"[Signal Generator] Gemini Final Decision:\n{response.text}")
-            data = json.loads(response.text.replace("```json", "").replace("```", ""))
+            print(f"\n[Signal Generator] Synthesizing final signal with AI...")
+            response_text = generate_content_with_fallback(prompt)
+            print(f"[Signal Generator] AI Final Decision:\n{response_text}")
+            data = json.loads(response_text.replace("```json", "").replace("```", ""))
             return ContrarianSignal(**data)
         except Exception as e:
             print(f"!!! [Signal Generator] ERROR: {e}")

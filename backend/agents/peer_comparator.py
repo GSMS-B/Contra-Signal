@@ -1,14 +1,11 @@
-import google.generativeai as genai
 import json
 import os
 import logging
-from backend.config import GEMINI_API_KEY
 from backend.models.schemas import PeerComparison, FundamentalMetrics
-from backend.utils.ai_helper import generate_content_with_retry
+from backend.utils.ai_helper import generate_content_with_fallback
 from backend.utils.peer_comparison import calculate_normalized_scores_v2
 
 logger = logging.getLogger(__name__)
-genai.configure(api_key=GEMINI_API_KEY)
 
 class PeerComparator:
     def __init__(self):
@@ -151,10 +148,9 @@ class PeerComparator:
         """
 
         try:
-            print(f"[Peer Comparator] Sending comparison prompt...")
-            model_flash = genai.GenerativeModel('models/gemma-3-27b-it')
-            response = generate_content_with_retry(model_flash, prompt)
-            data = json.loads(response.text.replace("```json", "").replace("```", ""))
+            print(f"[Peer Comparator] Sending comparison prompt to AI...")
+            response_text = generate_content_with_fallback(prompt)
+            data = json.loads(response_text.replace("```json", "").replace("```", ""))
             
             return PeerComparison(
                 competitive_position=data.get('competitive_position', 'average'),

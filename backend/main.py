@@ -97,6 +97,16 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to load ticker database: {e}")
 
     logger.info("Server starting... Agents will be loaded lazily on first use.")
+    
+    # Asynchronously preload RAG model so it doesn't block port 8000
+    def preload_rag():
+        from backend.utils.rag import get_rag
+        logger.info("Pre-loading RAG embedding model in background...")
+        get_rag()
+        logger.info("RAG embedding model loaded successfully.")
+    
+    asyncio.create_task(asyncio.to_thread(preload_rag))
+    
     yield
     # Shutdown
     logger.info("Shutting down...")
@@ -203,11 +213,11 @@ def process_analysis(job_id: str, company_name: str, report_type: str, file_path
 
 @app.get("/")
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 @app.get("/analyze")
 async def analyze_page(request: Request):
-    return templates.TemplateResponse("analyze.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="analyze.html")
 
 @app.get("/favicon.ico")
 async def favicon():
@@ -222,14 +232,14 @@ async def analyzing_page(request: Request, job_id: str):
     if job_id not in jobs:
          # Optionally handle 404, but page might handle it via JS API call
          pass
-    return templates.TemplateResponse("progress.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="progress.html")
 
 @app.get("/results/{job_id}")
 async def results_page(request: Request, job_id: str):
     if job_id not in jobs or jobs[job_id].status != "completed":
         # In real app, handle gracefully
         pass
-    return templates.TemplateResponse("results.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="results.html")
 
 @app.get("/api/search")
 async def search_companies(q: str):
@@ -304,16 +314,15 @@ async def ask_question(job_id: str, request: QuestionRequest):
     # Ideally RAG should persist or be accessible. 
     # Our FinancialRAG uses persistent ChromaDB, so:
     
-    from backend.utils.rag import FinancialRAG # LAZY IMPORT
-    rag = FinancialRAG() # Re-init connects to existing DB
+    from backend.utils.rag import get_rag
+    rag = get_rag()
     job = jobs[job_id]
     
     # Simple context usage
     context = rag.query_context(request.question, job.result.company_name) if job.result else ""
     
     # Simple direct generation for Q&A
-    import google.generativeai as genai
-    model = genai.GenerativeModel('models/gemma-3-27b-it')
+    from backend.utils.ai_helper import generate_content_with_fallback
     
     prompt = f"""
     Context about {job.result.company_name}:
@@ -325,8 +334,8 @@ async def ask_question(job_id: str, request: QuestionRequest):
     """
     
     try:
-        resp = model.generate_content(prompt)
-        return QuestionResponse(answer=resp.text)
+        resp_text = generate_content_with_fallback(prompt)
+        return QuestionResponse(answer=resp_text)
     except Exception as e:
         import traceback
         traceback.print_exc()

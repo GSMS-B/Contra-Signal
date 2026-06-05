@@ -1,20 +1,17 @@
-import google.generativeai as genai
 import json
 import logging
-from backend.config import GEMINI_API_KEY
 from backend.utils.rag import FinancialRAG
 from backend.utils.pdf_parser import PDFParser
 from backend.utils.table_extractor import FinancialTableExtractor
 from backend.models.schemas import FundamentalMetrics
-from backend.utils.ai_helper import generate_content_with_retry
+from backend.utils.ai_helper import generate_content_with_fallback
 
 logger = logging.getLogger(__name__)
 
-genai.configure(api_key=GEMINI_API_KEY)
-
 class FundamentalAnalyzer:
     def __init__(self):
-        self.rag = FinancialRAG()
+        from backend.utils.rag import get_rag
+        self.rag = get_rag()
         self.pdf_parser = PDFParser
         self.table_extractor = FinancialTableExtractor()
 
@@ -115,10 +112,9 @@ class FundamentalAnalyzer:
 
         try:
             if context and len(context) > 100:
-                print("[Fundamental Analyzer] Asking Gemini for qualitative insights + math inputs...")
-                model_flash = genai.GenerativeModel('models/gemma-3-27b-it')
-                response = generate_content_with_retry(model_flash, prompt)
-                extracted = json.loads(response.text.replace("```json", "").replace("```", ""))
+                print("[Fundamental Analyzer] Asking AI for qualitative insights + math inputs...")
+                response_text = generate_content_with_fallback(prompt)
+                extracted = json.loads(response_text.replace("```json", "").replace("```", ""))
                 llm_data.update(extracted)
             else:
                 print("[Fundamental Analyzer] RAG Context empty. Using defaults.")
